@@ -1,5 +1,7 @@
+
 #include <stdio.h>
 #include "ev_planner.h"
+#include "input_validation.h"
 
 void show_menu(void)
 {
@@ -14,20 +16,30 @@ void show_menu(void)
 
 void add_location_menu(Graph *graph)
 {
-    printf("\nAdd Location selected.\n");
-    printf("Location entry will be handled here.\n");
+    char name[MAX_NAME];
+
+    if (read_string("Enter location name: ", name, MAX_NAME)) {
+        int result = add_location(graph, name);
+
+        if (result >= 0)
+            printf("Location added successfully!\n");
+        else
+            printf("Could not add location.\n");
+    } else {
+        printf("Invalid location name.\n");
+    }
 }
 
 void add_road_menu(Graph *graph)
 {
-    printf("\nAdd Road selected.\n");
-    printf("Road entry will be handled here.\n");
+    (void)graph;
+    printf("Add Road functionality is pending.\n");
 }
 
 void find_shortest_route(Graph *graph)
 {
-    printf("\nShortest Route selected.\n");
-    printf("Route calculation will be handled here.\n");
+    (void)graph;
+    printf("Shortest Route functionality is pending.\n");
 }
 
 void show_all_locations(Graph *graph)
