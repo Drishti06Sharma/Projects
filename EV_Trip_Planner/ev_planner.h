@@ -1,0 +1,12 @@
+#ifndef EV_PLANNER_H
+#define EV_PLANNER_H
+
+#include "graph.h"
+
+void show_menu(void);
+void add_location_menu(Graph *graph);
+void add_road_menu(Graph *graph);
+void find_shortest_route(Graph *graph);
+void show_all_locations(Graph *graph);
+
+#endif
