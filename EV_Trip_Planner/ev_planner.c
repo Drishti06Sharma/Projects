@@ -7,6 +7,7 @@
 #include "fastest_route.h"
 #include "bellman_ford.h"
 
+
 void show_menu(void)
 {
     printf("\n===== EV Trip Planner =====\n");
@@ -16,8 +17,11 @@ void show_menu(void)
     printf("4. Find Shortest Distance Route (Dijkstra)\n");
     printf("5. Find Fastest Route (Dijkstra)\n");
     printf("6. Find Shortest Distance Route (Bellman-Ford)\n");
-    printf("7. Exit\n");
+    printf("7. Install Charging Station\n");
+    printf("8. Display Charging Stations\n");
+    printf("9. Exit\n");
 }
+ 
 
 void add_location_menu(Graph *graph)
 {
@@ -206,4 +210,53 @@ void find_bellman_ford_route(Graph *graph)
 void show_all_locations(Graph *graph)
 {
     display_locations(graph);
+}
+
+
+void install_charging_station_menu(Graph *graph)
+{
+    int location_id;
+    int charger_count;
+    double cost;
+
+    if (graph->node_count == 0)
+    {
+        printf("Please add locations first.\n");
+        return;
+    }
+
+    display_locations(graph);
+
+    if (!read_integer("Enter location ID for station: ", &location_id))
+    {
+        printf("Invalid location ID.\n");
+        return;
+    }
+
+    if (!read_integer("Enter number of chargers: ", &charger_count))
+    {
+        printf("Invalid charger count.\n");
+        return;
+    }
+
+    if (!read_double("Enter installation cost: ", &cost))
+    {
+        printf("Invalid installation cost.\n");
+        return;
+    }
+
+    if (install_charging_station(
+            graph, location_id, charger_count, cost))
+    {
+        printf("Charging station installed successfully!\n");
+    }
+    else
+    {
+        printf("Could not install station. Check the ID and values.\n");
+    }
+}
+
+void show_charging_stations_menu(Graph *graph)
+{
+    display_charging_stations(graph);
 }
