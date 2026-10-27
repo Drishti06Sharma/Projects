@@ -5,12 +5,21 @@
 
 void initialize_graph(Graph *graph)
 {
-    graph->node_count = 0;
+    if (graph != NULL)
+    {
+        graph->node_count = 0;
+    }
 }
 
 int add_location(Graph *graph, const char *name)
 {
     int i;
+
+    if (graph == NULL)
+    {
+        printf("Invalid graph!\n");
+        return -1;
+    }
 
     if (graph->node_count >= MAX_NODES)
     {
@@ -45,7 +54,7 @@ int add_location(Graph *graph, const char *name)
 }
 
 int add_road(Graph *graph, int source, int destination,
-             double distance)
+             double distance, double time)
 {
     int i;
 
@@ -62,9 +71,9 @@ int add_road(Graph *graph, int source, int destination,
         return 0;
     }
 
-    if (source == destination || distance <= 0)
+    if (source == destination || distance <= 0 || time <= 0)
     {
-        printf("Invalid road details!\n");
+        printf("Invalid road details! Distance and time must be positive.\n");
         return 0;
     }
 
@@ -75,21 +84,22 @@ int add_road(Graph *graph, int source, int destination,
         return 0;
     }
 
-    /*
-       Multiple roads between the same locations are allowed.
-       Each road can have a different distance.
-    */
-
+    /* Add road from source to destination. */
     i = graph->nodes[source].edge_count;
 
     graph->nodes[source].edges[i].destination = destination;
     graph->nodes[source].edges[i].distance = distance;
+    graph->nodes[source].edges[i].time = time;
+
     graph->nodes[source].edge_count++;
 
+    /* Add the same road in the reverse direction. */
     i = graph->nodes[destination].edge_count;
 
     graph->nodes[destination].edges[i].destination = source;
     graph->nodes[destination].edges[i].distance = distance;
+    graph->nodes[destination].edges[i].time = time;
+
     graph->nodes[destination].edge_count++;
 
     return 1;
@@ -116,9 +126,10 @@ void display_locations(const Graph *graph)
         {
             int next = graph->nodes[i].edges[j].destination;
 
-            printf("  -> %s (%.2f km)\n",
+            printf("  -> %s (%.2f km, %.2f hours)\n",
                    graph->nodes[next].name,
-                   graph->nodes[i].edges[j].distance);
+                   graph->nodes[i].edges[j].distance,
+                   graph->nodes[i].edges[j].time);
         }
     }
 }

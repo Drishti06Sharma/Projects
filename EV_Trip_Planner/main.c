@@ -23,6 +23,7 @@ int main(void)
             continue;
         }
 
+        
         switch (choice)
         {
             case 1:
@@ -42,11 +43,20 @@ int main(void)
                 break;
 
             case 5:
+                find_fastest_route(&graph);
+                break;
+
+            case 6:
+                find_bellman_ford_route(&graph);
+                break;
+
+            case 7:
                 printf("Exiting EV Trip Planner. Goodbye!\n");
                 return 0;
 
             default:
-                printf("Invalid choice. Select 1 to 5.\n");
+                printf("Invalid choice. Select 1 to 7.\n");
         }
+
     }
 }

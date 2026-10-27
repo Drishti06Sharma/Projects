@@ -1,8 +1,11 @@
 
 #include <stdio.h>
+#include <float.h>
 #include "ev_planner.h"
 #include "input_validation.h"
 #include "dijkstra.h"
+#include "fastest_route.h"
+#include "bellman_ford.h"
 
 void show_menu(void)
 {
@@ -10,15 +13,18 @@ void show_menu(void)
     printf("1. Add Location\n");
     printf("2. Add Road\n");
     printf("3. Display Locations\n");
-    printf("4. Find Shortest Route\n");
-    printf("5. Exit\n");
+    printf("4. Find Shortest Distance Route (Dijkstra)\n");
+    printf("5. Find Fastest Route (Dijkstra)\n");
+    printf("6. Find Shortest Distance Route (Bellman-Ford)\n");
+    printf("7. Exit\n");
 }
 
 void add_location_menu(Graph *graph)
 {
     char name[MAX_NAME];
 
-    if (!read_string("Enter location name: ", name, MAX_NAME)) {
+    if (!read_string("Enter location name: ", name, MAX_NAME))
+    {
         printf("Invalid location name.\n");
         return;
     }
@@ -32,34 +38,7 @@ void add_location_menu(Graph *graph)
 void add_road_menu(Graph *graph)
 {
     int source, destination;
-    double distance;
-
-    if (graph->node_count < 2) {
-        printf("Add at least two locations first.\n");
-        return;
-    }
-
-    display_locations(graph);
-
-    if (!read_integer("Enter source location ID: ", &source) ||
-        !read_integer("Enter destination location ID: ", &destination) ||
-        !read_double("Enter road distance in km: ", &distance)) {
-        printf("Invalid input. Please try again.\n");
-        return;
-    }
-
-    if (add_road(graph, source, destination, distance))
-        printf("Road added successfully!\n");
-    else
-        printf("Could not add road. Check IDs and distance.\n");
-}
-
-
-void find_shortest_route(Graph *graph)
-{
-    int source, destination;
-    double distances[MAX_NODES];
-    int previous[MAX_NODES];
+    double distance, time;
 
     if (graph->node_count < 2)
     {
@@ -70,44 +49,38 @@ void find_shortest_route(Graph *graph)
     display_locations(graph);
 
     if (!read_integer("Enter source location ID: ", &source) ||
-        !read_integer("Enter destination location ID: ", &destination))
+        !read_integer("Enter destination location ID: ", &destination) ||
+        !read_double("Enter road distance in km: ", &distance) ||
+        !read_double("Enter travel time in hours: ", &time))
     {
-        printf("Invalid input.\n");
+        printf("Invalid input. Please try again.\n");
         return;
     }
 
-    if (source < 0 || source >= graph->node_count ||
-        destination < 0 || destination >= graph->node_count)
-    {
-        printf("Invalid location ID.\n");
-        return;
-    }
+    if (add_road(graph, source, destination, distance, time))
+        printf("Road added successfully!\n");
+    else
+        printf("Could not add road. Check IDs, distance and time.\n");
+}
 
-    if (!dijkstra(graph, source, destination, distances, previous))
-    {
-        printf("Unable to calculate route.\n");
-        return;
-    }
-
-    if (distances[destination] == 1.7976931348623157e+308)
-    {
-        printf("No route exists between these locations.\n");
-        return;
-    }
-
+static void display_route(const Graph *graph, int destination,
+                          const int previous[MAX_NODES],
+                          double total, const char *label,
+                          const char *unit)
+{
     int path[MAX_NODES];
-    int path_count = 0;
+    int count = 0;
     int current = destination;
 
-    while (current != -1 && path_count < MAX_NODES)
+    while (current != -1 && count < MAX_NODES)
     {
-        path[path_count++] = current;
+        path[count++] = current;
         current = previous[current];
     }
 
-    printf("\nShortest route: ");
+    printf("\n%s: ", label);
 
-    for (int i = path_count - 1; i >= 0; i--)
+    for (int i = count - 1; i >= 0; i--)
     {
         printf("%s", graph->nodes[path[i]].name);
 
@@ -115,9 +88,120 @@ void find_shortest_route(Graph *graph)
             printf(" -> ");
     }
 
-    printf("\nTotal distance: %.2f km\n", distances[destination]);
+    printf("\nTotal %s: %.2f %s\n", label, total, unit);
 }
 
+static int get_route_locations(const Graph *graph,
+                               int *source, int *destination)
+{
+    if (graph->node_count < 2)
+    {
+        printf("Add at least two locations first.\n");
+        return 0;
+    }
+
+    display_locations(graph);
+
+    if (!read_integer("Enter source location ID: ", source) ||
+        !read_integer("Enter destination location ID: ", destination))
+    {
+        printf("Invalid input.\n");
+        return 0;
+    }
+
+    if (*source < 0 || *source >= graph->node_count ||
+        *destination < 0 || *destination >= graph->node_count)
+    {
+        printf("Invalid location ID.\n");
+        return 0;
+    }
+
+    return 1;
+}
+
+void find_shortest_route(Graph *graph)
+{
+    int source, destination;
+    double distances[MAX_NODES];
+    int previous[MAX_NODES];
+
+    if (!get_route_locations(graph, &source, &destination))
+        return;
+
+    if (!dijkstra(graph, source, destination, distances, previous))
+    {
+        printf("Unable to calculate route.\n");
+        return;
+    }
+
+    if (distances[destination] == DBL_MAX)
+    {
+        printf("No route exists between these locations.\n");
+        return;
+    }
+
+    display_route(graph, destination, previous,
+                  distances[destination], "Shortest route (Dijkstra)", "km");
+}
+
+void find_fastest_route(Graph *graph)
+{
+    int source, destination;
+    double times[MAX_NODES];
+    int previous[MAX_NODES];
+
+    if (!get_route_locations(graph, &source, &destination))
+        return;
+
+    if (!fastest_route(graph, source, destination, times, previous))
+    {
+        printf("Unable to calculate fastest route.\n");
+        return;
+    }
+
+    if (times[destination] == DBL_MAX)
+    {
+        printf("No route exists between these locations.\n");
+        return;
+    }
+
+    display_route(graph, destination, previous,
+                  times[destination], "Fastest route (Dijkstra)", "hours");
+}
+
+void find_bellman_ford_route(Graph *graph)
+{
+    int source, destination;
+    double distances[MAX_NODES];
+    int previous[MAX_NODES];
+    int result;
+
+    if (!get_route_locations(graph, &source, &destination))
+        return;
+
+    result = bellman_ford(graph, source, distances, previous);
+
+    if (result == 0)
+    {
+        printf("Unable to calculate route.\n");
+        return;
+    }
+
+    if (result == -1)
+    {
+        printf("Negative-weight cycle detected. Shortest route is undefined.\n");
+        return;
+    }
+
+    if (distances[destination] == DBL_MAX)
+    {
+        printf("No route exists between these locations.\n");
+        return;
+    }
+
+    display_route(graph, destination, previous,
+                  distances[destination], "Shortest route (Bellman-Ford)", "km");
+}
 
 void show_all_locations(Graph *graph)
 {
