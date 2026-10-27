@@ -23,7 +23,6 @@ int main(void)
             continue;
         }
 
-        
         switch (choice)
         {
             case 1:
@@ -51,12 +50,21 @@ int main(void)
                 break;
 
             case 7:
+                install_charging_station_menu(&graph);
+                break;
+
+            case 8:
+                show_charging_stations_menu(&graph);
+                break;
+
+            case 9:
                 printf("Exiting EV Trip Planner. Goodbye!\n");
                 return 0;
 
             default:
-                printf("Invalid choice. Select 1 to 7.\n");
+                printf("Invalid choice. Select 1 to 9.\n");
         }
-
     }
+
+    return 0;
 }

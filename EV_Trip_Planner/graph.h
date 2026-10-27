@@ -5,19 +5,26 @@
 #define MAX_NODES 50
 #define MAX_NAME 50
 
-typedef struct {
+typedef struct
+{
     int destination;
     double distance;
     double time;
 } Edge;
 
-typedef struct {
+typedef struct
+{
     char name[MAX_NAME];
     int edge_count;
     Edge edges[MAX_NODES];
+
+    int has_station;
+    int charger_count;
+    double installation_cost;
 } Node;
 
-typedef struct {
+typedef struct
+{
     int node_count;
     Node nodes[MAX_NODES];
 } Graph;
@@ -30,5 +37,11 @@ int add_road(Graph *graph, int source, int destination,
              double distance, double time);
 
 void display_locations(const Graph *graph);
+
+int install_charging_station(Graph *graph, int location_id,
+                             int charger_count,
+                             double installation_cost);
+
+void display_charging_stations(const Graph *graph);
 
 #endif

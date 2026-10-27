@@ -6,30 +6,19 @@
 void initialize_graph(Graph *graph)
 {
     if (graph != NULL)
-    {
         graph->node_count = 0;
-    }
 }
 
 int add_location(Graph *graph, const char *name)
 {
     int i;
 
-    if (graph == NULL)
-    {
-        printf("Invalid graph!\n");
+    if (graph == NULL || name == NULL || name[0] == '\0')
         return -1;
-    }
 
     if (graph->node_count >= MAX_NODES)
     {
         printf("Maximum locations reached!\n");
-        return -1;
-    }
-
-    if (name == NULL || name[0] == '\0')
-    {
-        printf("Location name cannot be empty!\n");
         return -1;
     }
 
@@ -48,6 +37,12 @@ int add_location(Graph *graph, const char *name)
     graph->nodes[i].name[MAX_NAME - 1] = '\0';
 
     graph->nodes[i].edge_count = 0;
+
+    /* Initially, no charging station exists here. */
+    graph->nodes[i].has_station = 0;
+    graph->nodes[i].charger_count = 0;
+    graph->nodes[i].installation_cost = 0.0;
+
     graph->node_count++;
 
     return i;
@@ -59,32 +54,19 @@ int add_road(Graph *graph, int source, int destination,
     int i;
 
     if (graph == NULL)
-    {
-        printf("Invalid graph!\n");
         return 0;
-    }
 
     if (source < 0 || source >= graph->node_count ||
         destination < 0 || destination >= graph->node_count)
-    {
-        printf("Invalid location!\n");
         return 0;
-    }
 
     if (source == destination || distance <= 0 || time <= 0)
-    {
-        printf("Invalid road details! Distance and time must be positive.\n");
         return 0;
-    }
 
     if (graph->nodes[source].edge_count >= MAX_NODES ||
         graph->nodes[destination].edge_count >= MAX_NODES)
-    {
-        printf("Cannot add more roads!\n");
         return 0;
-    }
 
-    /* Add road from source to destination. */
     i = graph->nodes[source].edge_count;
 
     graph->nodes[source].edges[i].destination = destination;
@@ -93,7 +75,6 @@ int add_road(Graph *graph, int source, int destination,
 
     graph->nodes[source].edge_count++;
 
-    /* Add the same road in the reverse direction. */
     i = graph->nodes[destination].edge_count;
 
     graph->nodes[destination].edges[i].destination = source;
@@ -101,6 +82,31 @@ int add_road(Graph *graph, int source, int destination,
     graph->nodes[destination].edges[i].time = time;
 
     graph->nodes[destination].edge_count++;
+
+    return 1;
+}
+
+int install_charging_station(Graph *graph, int location_id,
+                             int charger_count, double installation_cost)
+{
+    if (graph == NULL)
+        return 0;
+
+    if (location_id < 0 || location_id >= graph->node_count)
+        return 0;
+
+    if (charger_count <= 0 || installation_cost <= 0)
+        return 0;
+
+    if (graph->nodes[location_id].has_station)
+    {
+        printf("A charging station already exists at this location.\n");
+        return 0;
+    }
+
+    graph->nodes[location_id].has_station = 1;
+    graph->nodes[location_id].charger_count = charger_count;
+    graph->nodes[location_id].installation_cost = installation_cost;
 
     return 1;
 }
@@ -119,8 +125,12 @@ void display_locations(const Graph *graph)
 
     for (i = 0; i < graph->node_count; i++)
     {
-        printf("\nLocation %d: %s\n",
-               i, graph->nodes[i].name);
+        printf("\nLocation %d: %s", i, graph->nodes[i].name);
+
+        if (graph->nodes[i].has_station)
+            printf(" [Charging Station]");
+
+        printf("\n");
 
         for (j = 0; j < graph->nodes[i].edge_count; j++)
         {
@@ -132,4 +142,37 @@ void display_locations(const Graph *graph)
                    graph->nodes[i].edges[j].time);
         }
     }
+}
+
+void display_charging_stations(const Graph *graph)
+{
+    int i;
+    int found = 0;
+
+    if (graph == NULL)
+    {
+        printf("Invalid graph.\n");
+        return;
+    }
+
+    printf("\n--- Charging Stations ---\n");
+
+    for (i = 0; i < graph->node_count; i++)
+    {
+        if (graph->nodes[i].has_station)
+        {
+            printf("Location ID: %d\n", i);
+            printf("Location: %s\n", graph->nodes[i].name);
+            printf("Number of chargers: %d\n",
+                   graph->nodes[i].charger_count);
+            printf("Installation cost: %.2f\n",
+                   graph->nodes[i].installation_cost);
+            printf("-------------------------\n");
+
+            found = 1;
+        }
+    }
+
+    if (!found)
+        printf("No charging stations installed yet.\n");
 }
