@@ -13,15 +13,18 @@ int main(void)
 
     printf("Welcome to EV Trip Planner!\n");
 
-    while (1) {
+    while (1)
+    {
         show_menu();
 
-        if (!read_integer("Enter your choice: ", &choice)) {
-            printf("Please enter a valid number.\n");
+        if (!read_integer("Enter your choice: ", &choice))
+        {
+            printf("Invalid input. Please enter a number.\n");
             continue;
         }
 
-        switch (choice) {
+        switch (choice)
+        {
             case 1:
                 add_location_menu(&graph);
                 break;

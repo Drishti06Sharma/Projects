@@ -8,6 +8,7 @@
 typedef struct {
     int destination;
     double distance;
+    double time;
 } Edge;
 
 typedef struct {
@@ -22,9 +23,12 @@ typedef struct {
 } Graph;
 
 void initialize_graph(Graph *graph);
+
 int add_location(Graph *graph, const char *name);
+
 int add_road(Graph *graph, int source, int destination,
-             double distance);
+             double distance, double time);
+
 void display_locations(const Graph *graph);
 
 #endif

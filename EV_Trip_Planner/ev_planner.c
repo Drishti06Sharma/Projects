@@ -54,13 +54,15 @@ void add_road_menu(Graph *graph)
         printf("Could not add road. Check IDs and distance.\n");
 }
 
+
 void find_shortest_route(Graph *graph)
 {
     int source, destination;
     double distances[MAX_NODES];
     int previous[MAX_NODES];
 
-    if (graph->node_count < 2) {
+    if (graph->node_count < 2)
+    {
         printf("Add at least two locations first.\n");
         return;
     }
@@ -68,24 +70,54 @@ void find_shortest_route(Graph *graph)
     display_locations(graph);
 
     if (!read_integer("Enter source location ID: ", &source) ||
-        !read_integer("Enter destination location ID: ", &destination)) {
+        !read_integer("Enter destination location ID: ", &destination))
+    {
         printf("Invalid input.\n");
         return;
     }
 
     if (source < 0 || source >= graph->node_count ||
-        destination < 0 || destination >= graph->node_count) {
+        destination < 0 || destination >= graph->node_count)
+    {
         printf("Invalid location ID.\n");
         return;
     }
 
-    if (dijkstra(graph, source, destination, distances, previous)) {
-        printf("Dijkstra function called.\n");
-        printf("Shortest-route calculation is not implemented yet.\n");
-    } else {
+    if (!dijkstra(graph, source, destination, distances, previous))
+    {
         printf("Unable to calculate route.\n");
+        return;
     }
+
+    if (distances[destination] == 1.7976931348623157e+308)
+    {
+        printf("No route exists between these locations.\n");
+        return;
+    }
+
+    int path[MAX_NODES];
+    int path_count = 0;
+    int current = destination;
+
+    while (current != -1 && path_count < MAX_NODES)
+    {
+        path[path_count++] = current;
+        current = previous[current];
+    }
+
+    printf("\nShortest route: ");
+
+    for (int i = path_count - 1; i >= 0; i--)
+    {
+        printf("%s", graph->nodes[path[i]].name);
+
+        if (i > 0)
+            printf(" -> ");
+    }
+
+    printf("\nTotal distance: %.2f km\n", distances[destination]);
 }
+
 
 void show_all_locations(Graph *graph)
 {

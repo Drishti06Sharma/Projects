@@ -1,49 +1,71 @@
 
 #include <stdio.h>
-#include "graph.h"
-#include "ev_planner.h"
+#include <stdlib.h>
+#include <string.h>
 #include "input_validation.h"
 
-int main(void)
+int read_integer(const char *prompt, int *value)
 {
-    Graph graph;
-    int choice;
+    char buffer[100];
+    char extra;
 
-    initialize_graph(&graph);
+    printf("%s", prompt);
 
-    printf("Welcome to EV Trip Planner!\n");
-
-    while (1) {
-        show_menu();
-
-        if (!read_integer("Enter your choice: ", &choice)) {
-            printf("Invalid input. Please enter a number.\n");
-            continue;
-        }
-
-        switch (choice) {
-            case 1:
-                add_location_menu(&graph);
-                break;
-
-            case 2:
-                add_road_menu(&graph);
-                break;
-
-            case 3:
-                show_all_locations(&graph);
-                break;
-
-            case 4:
-                find_shortest_route(&graph);
-                break;
-
-            case 5:
-                printf("Exiting EV Trip Planner. Goodbye!\n");
-                return 0;
-
-            default:
-                printf("Invalid choice. Select 1 to 5.\n");
-        }
+    if (fgets(buffer, sizeof(buffer), stdin) == NULL)
+    {
+        return 0;
     }
+
+    if (sscanf(buffer, " %d %c", value, &extra) != 1)
+    {
+        return 0;
+    }
+
+    return 1;
+}
+
+int read_double(const char *prompt, double *value)
+{
+    char buffer[100];
+    char extra;
+
+    printf("%s", prompt);
+
+    if (fgets(buffer, sizeof(buffer), stdin) == NULL)
+    {
+        return 0;
+    }
+
+    if (sscanf(buffer, " %lf %c", value, &extra) != 1)
+    {
+        return 0;
+    }
+
+    return 1;
+}
+
+int read_string(const char *prompt, char *buffer, int size)
+{
+    size_t length;
+
+    if (buffer == NULL || size <= 1)
+    {
+        return 0;
+    }
+
+    printf("%s", prompt);
+
+    if (fgets(buffer, size, stdin) == NULL)
+    {
+        return 0;
+    }
+
+    length = strlen(buffer);
+
+    if (length > 0 && buffer[length - 1] == '\n')
+    {
+        buffer[length - 1] = '\0';
+    }
+
+    return buffer[0] != '\0';
 }
