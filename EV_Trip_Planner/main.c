@@ -1,27 +1,49 @@
 
 #include <stdio.h>
 #include "graph.h"
+#include "ev_planner.h"
+#include "input_validation.h"
 
-int main(void) {
+int main(void)
+{
     Graph graph;
+    int choice;
 
     initialize_graph(&graph);
 
-    int a = add_location(&graph, "Campus");
-    int b = add_location(&graph, "Market");
-    int c = add_location(&graph, "Hospital");
-    int d = add_location(&graph, "Mall");
+    printf("Welcome to EV Trip Planner!\n");
 
-    if (a == -1 || b == -1 || c == -1 || d == -1) {
-        return 1;
+    while (1) {
+        show_menu();
+
+        if (!read_integer("Enter your choice: ", &choice)) {
+            printf("Please enter a valid number.\n");
+            continue;
+        }
+
+        switch (choice) {
+            case 1:
+                add_location_menu(&graph);
+                break;
+
+            case 2:
+                add_road_menu(&graph);
+                break;
+
+            case 3:
+                show_all_locations(&graph);
+                break;
+
+            case 4:
+                find_shortest_route(&graph);
+                break;
+
+            case 5:
+                printf("Exiting EV Trip Planner. Goodbye!\n");
+                return 0;
+
+            default:
+                printf("Invalid choice. Select 1 to 5.\n");
+        }
     }
-
-    add_road(&graph, a, b, 3.0);
-    add_road(&graph, a, c, 5.0);
-    add_road(&graph, b, d, 2.0);
-    add_road(&graph, c, d, 4.0);
-
-    display_locations(&graph);
-
-    return 0;
 }

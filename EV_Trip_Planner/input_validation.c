@@ -1,58 +1,49 @@
+
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "graph.h"
+#include "ev_planner.h"
 #include "input_validation.h"
 
-int read_integer(const char *prompt, int *value)
+int main(void)
 {
-    char buffer[100];
-    char extra;
+    Graph graph;
+    int choice;
 
-    printf("%s", prompt);
+    initialize_graph(&graph);
 
-    if (fgets(buffer, sizeof(buffer), stdin) == NULL)
-        return 0;
+    printf("Welcome to EV Trip Planner!\n");
 
-    if (sscanf(buffer, " %d %c", value, &extra) != 1)
-        return 0;
+    while (1) {
+        show_menu();
 
-    return 1;
-}
+        if (!read_integer("Enter your choice: ", &choice)) {
+            printf("Invalid input. Please enter a number.\n");
+            continue;
+        }
 
-int read_double(const char *prompt, double *value)
-{
-    char buffer[100];
-    char extra;
+        switch (choice) {
+            case 1:
+                add_location_menu(&graph);
+                break;
 
-    printf("%s", prompt);
+            case 2:
+                add_road_menu(&graph);
+                break;
 
-    if (fgets(buffer, sizeof(buffer), stdin) == NULL)
-        return 0;
+            case 3:
+                show_all_locations(&graph);
+                break;
 
-    if (sscanf(buffer, " %lf %c", value, &extra) != 1)
-        return 0;
+            case 4:
+                find_shortest_route(&graph);
+                break;
 
-    return 1;
-}
+            case 5:
+                printf("Exiting EV Trip Planner. Goodbye!\n");
+                return 0;
 
-int read_string(const char *prompt, char *buffer, int size)
-{
-    size_t length;
-
-    if (buffer == NULL || size <= 1)
-        return 0;
-
-    printf("%s", prompt);
-
-    if (fgets(buffer, size, stdin) == NULL)
-        return 0;
-
-    length = strlen(buffer);
-
-    if (length > 0 && buffer[length - 1] == '\n')
-        buffer[length - 1] = '\0';
-    else
-        buffer[size - 1] = '\0';
-
-    return buffer[0] != '\0';
+            default:
+                printf("Invalid choice. Select 1 to 5.\n");
+        }
+    }
 }
