@@ -6,7 +6,7 @@
 #include "dijkstra.h"
 #include "fastest_route.h"
 #include "bellman_ford.h"
-
+#include "advanced_algorithms.h"
 
 void show_menu(void)
 {
@@ -21,6 +21,7 @@ void show_menu(void)
     printf("8. Display Charging Stations\n");
     printf("9. Exit\n");
     printf("10. Automatic Charging Station Placement (Greedy)\n");
+    printf("11. Quick Sort and Binary Search\n");
 }
  
 

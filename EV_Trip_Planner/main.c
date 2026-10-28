@@ -3,6 +3,7 @@
 #include "graph.h"
 #include "ev_planner.h"
 #include "input_validation.h"
+#include "advanced_algorithms.h"
 
 int main(void)
 {
@@ -65,8 +66,12 @@ int main(void)
                 automatic_station_placement_menu(&graph);
                 break;
 
+            case 11:
+                advanced_algorithms_menu();
+                break;
+
             default:
-                printf("Invalid choice. Please enter 1 to 10.\n");
+                printf("Invalid choice. Please enter 1 to 11.\n");
         }
     }
 
