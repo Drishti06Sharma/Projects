@@ -20,6 +20,7 @@ void show_menu(void)
     printf("7. Install Charging Station\n");
     printf("8. Display Charging Stations\n");
     printf("9. Exit\n");
+    printf("10. Automatic Charging Station Placement (Greedy)\n");
 }
  
 
@@ -259,4 +260,76 @@ void install_charging_station_menu(Graph *graph)
 void show_charging_stations_menu(Graph *graph)
 {
     display_charging_stations(graph);
+}
+
+void automatic_station_placement_menu(Graph *graph)
+{
+    int chargers;
+    int placed = 0;
+    int i,best;
+    double budget, cost, spent = 0.0;
+
+    if (graph->node_count == 0) {
+        printf("Please add locations first.\n");
+        return;
+    }
+
+    if (!read_double("Enter total installation budget: ", &budget) ||
+        budget <= 0) {
+        printf("Invalid budget.\n");
+        return;
+    }
+
+    if (!read_double("Enter cost per station: ", &cost) ||
+        cost <= 0) {
+        printf("Invalid station cost.\n");
+        return;
+    }
+
+    if (!read_integer("Enter chargers per station: ", &chargers) ||
+        chargers <= 0) {
+        printf("Invalid charger count.\n");
+        return;
+    }
+
+    while (spent + cost <= budget) {
+        best = -1;
+
+        for (i = 0; i < graph->node_count; i++) {
+            if (graph->nodes[i].has_station)
+                continue;
+
+            if (best == -1 ||
+                graph->nodes[i].edge_count >
+                graph->nodes[best].edge_count) {
+                best = i;
+            }
+        }
+
+        if (best == -1)
+            break;
+
+        if (!install_charging_station(
+                graph, best, chargers, cost)) {
+            printf("Could not install station at %s.\n",
+                   graph->nodes[best].name);
+            break;
+        }
+
+        spent += cost;
+        placed++;
+
+        printf("Station placed at %s "
+               "(road connections: %d)\n",
+               graph->nodes[best].name,
+               graph->nodes[best].edge_count);
+    }
+
+    printf("\n--- Automatic Placement Summary ---\n");
+    printf("Stations placed: %d\n", placed);
+    printf("Total cost: %.2f\n", spent);
+    printf("Remaining budget: %.2f\n", budget - spent);
+
+    if (placed == 0)
+        printf("No station could be placed within the budget.\n");
 }

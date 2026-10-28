@@ -61,8 +61,12 @@ int main(void)
                 printf("Exiting EV Trip Planner. Goodbye!\n");
                 return 0;
 
+            case 10:
+                automatic_station_placement_menu(&graph);
+                break;
+
             default:
-                printf("Invalid choice. Select 1 to 9.\n");
+                printf("Invalid choice. Please enter 1 to 10.\n");
         }
     }
 
