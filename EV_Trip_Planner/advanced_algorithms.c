@@ -124,6 +124,17 @@ void advanced_algorithms_menu(void)
 
     quick_sort(arr, 0, n - 1);
 
+        int merge_arr[] = {45, 12, 78, 23, 9, 56};
+    int merge_n = (int)(sizeof(merge_arr) / sizeof(merge_arr[0]));
+
+    merge_sort(merge_arr, 0, merge_n - 1);
+
+    printf("\nMerge Sort result: ");
+    for (int i = 0; i < merge_n; i++)
+        printf("%d ", merge_arr[i]);
+
+    printf("\n");
+
     printf("\nSorted array: ");
     for (int i = 0; i < n; i++)
         printf("%d ", arr[i]);
