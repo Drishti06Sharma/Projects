@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 
 /* Quick Sort */
@@ -12,7 +11,7 @@ void quick_sort(int arr[], int low, int high)
 
     for (int j = low; j < high; j++)
     {
-        if (arr[j] <= pivot)
+               if (arr[j] <= pivot)
         {
             i++;
             int temp = arr[i];
@@ -156,7 +155,7 @@ void advanced_algorithms_menu(void)
     else
         printf("Iterative Binary Search: Not found\n");
 
-    result = binary_search_recursive(arr, 0, n - 1, key);
+    result = binary_search_recursive(arr, 0, n - 1, key); nj
 
     if (result != -1)
         printf("Recursive Binary Search: Found at index %d\n", result);
