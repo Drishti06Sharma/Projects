@@ -1,0 +1,5 @@
+*.exe
+ev_planner
+*.o
+*.tmp
+.vscode/
