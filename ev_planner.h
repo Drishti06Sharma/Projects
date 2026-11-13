@@ -14,4 +14,6 @@ void show_all_locations(Graph *graph);
 void install_charging_station_menu(Graph *graph);
 void show_charging_stations_menu(Graph *graph);
 void automatic_station_placement_menu(Graph *graph);
+
 #endif
+

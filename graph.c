@@ -3,10 +3,71 @@
 #include <string.h>
 #include "graph.h"
 
+/* Initialize Dehradun road network */
 void initialize_graph(Graph *graph)
 {
-    if (graph != NULL)
-        graph->node_count = 0;
+    if (graph == NULL)
+        return;
+
+    graph->node_count = 0;
+
+    printf("\nLoading Dehradun Road Network...\n");
+
+    /* Predefined Dehradun locations */
+
+    add_location(graph, "Clock Tower");
+    add_location(graph, "ISBT Dehradun");
+    add_location(graph, "Railway Station");
+    add_location(graph, "Forest Research Institute");
+    add_location(graph, "Pacific Mall");
+    add_location(graph, "Prem Nagar");
+    add_location(graph, "DIT University");
+    add_location(graph, "Max Hospital");
+    add_location(graph, "Survey Chowk");
+    add_location(graph, "Sahastradhara Road");
+
+    /*
+       Initial road distances and travel times are
+       illustrative estimates for project simulation.
+       They are not live navigation measurements.
+    */
+
+    /* Clock Tower connections */
+    add_road(graph, 0, 1, 5.5, 0.20);
+    add_road(graph, 0, 2, 2.0, 0.10);
+    add_road(graph, 0, 3, 4.5, 0.18);
+    add_road(graph, 0, 4, 6.5, 0.22);
+    add_road(graph, 0, 8, 1.8, 0.10);
+
+    /* ISBT connections */
+    add_road(graph, 1, 2, 4.0, 0.15);
+    add_road(graph, 1, 5, 8.5, 0.30);
+
+    /* Railway Station connections */
+    add_road(graph, 2, 8, 2.5, 0.12);
+
+    /* FRI connections */
+    add_road(graph, 3, 5, 6.0, 0.22);
+
+    /* Pacific Mall connections */
+    add_road(graph, 4, 7, 4.0, 0.15);
+    add_road(graph, 4, 9, 6.5, 0.25);
+    add_road(graph, 4, 6, 12.0, 0.35);
+
+    /* Prem Nagar connections */
+    add_road(graph, 5, 6, 18.0, 0.45);
+
+    /* DIT University connections */
+    add_road(graph, 6, 9, 14.0, 0.40);
+
+    /* Max Hospital connections */
+    add_road(graph, 7, 8, 4.0, 0.16);
+
+    /* Sahastradhara Road connection */
+    add_road(graph, 9, 8, 8.0, 0.25);
+
+    printf("\nDehradun road network loaded successfully!\n");
+    printf("Total predefined locations: %d\n", graph->node_count);
 }
 
 int add_location(Graph *graph, const char *name)
@@ -37,8 +98,6 @@ int add_location(Graph *graph, const char *name)
     graph->nodes[i].name[MAX_NAME - 1] = '\0';
 
     graph->nodes[i].edge_count = 0;
-
-    /* Initially, no charging station exists here. */
     graph->nodes[i].has_station = 0;
     graph->nodes[i].charger_count = 0;
     graph->nodes[i].installation_cost = 0.0;
@@ -67,6 +126,13 @@ int add_road(Graph *graph, int source, int destination,
         graph->nodes[destination].edge_count >= MAX_NODES)
         return 0;
 
+    /* Prevent duplicate road connections */
+    for (i = 0; i < graph->nodes[source].edge_count; i++)
+    {
+        if (graph->nodes[source].edges[i].destination == destination)
+            return 0;
+    }
+
     i = graph->nodes[source].edge_count;
 
     graph->nodes[source].edges[i].destination = destination;
@@ -87,7 +153,8 @@ int add_road(Graph *graph, int source, int destination,
 }
 
 int install_charging_station(Graph *graph, int location_id,
-                             int charger_count, double installation_cost)
+                             int charger_count,
+                             double installation_cost)
 {
     if (graph == NULL)
         return 0;
@@ -121,7 +188,8 @@ void display_locations(const Graph *graph)
         return;
     }
 
-    printf("\n--- EV Road Network ---\n");
+    printf("\n--- Dehradun EV Road Network ---\n");
+    printf("(Road distances and times are simulation estimates)\n");
 
     for (i = 0; i < graph->node_count; i++)
     {

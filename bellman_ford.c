@@ -9,13 +9,13 @@ int bellman_ford(const Graph *graph, int source,
 {
     int i, j, k;
 
-    if (graph == NULL || source < 0 ||
-        source >= graph->node_count)
+    if (graph == NULL || distances == NULL || previous == NULL ||
+        graph->node_count < 1 || graph->node_count > MAX_NODES ||
+        source < 0 || source >= graph->node_count)
     {
         return 0;
     }
 
-    /* Initialize distances and previous locations. */
     for (i = 0; i < graph->node_count; i++)
     {
         distances[i] = DBL_MAX;
@@ -24,7 +24,6 @@ int bellman_ford(const Graph *graph, int source,
 
     distances[source] = 0.0;
 
-    /* Relax all roads V - 1 times. */
     for (k = 0; k < graph->node_count - 1; k++)
     {
         int updated = 0;
@@ -48,12 +47,10 @@ int bellman_ford(const Graph *graph, int source,
             }
         }
 
-        /* Stop early if no distance changed. */
         if (!updated)
             break;
     }
 
-    /* Check for a negative-weight cycle. */
     for (i = 0; i < graph->node_count; i++)
     {
         if (distances[i] == DBL_MAX)

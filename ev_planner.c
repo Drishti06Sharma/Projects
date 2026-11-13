@@ -7,6 +7,7 @@
 #include "fastest_route.h"
 #include "bellman_ford.h"
 #include "advanced_algorithms.h"
+#include "station_comparison.h"
 
 void show_menu(void)
 {
@@ -22,6 +23,7 @@ void show_menu(void)
     printf("9. Exit\n");
     printf("10. Automatic Charging Station Placement (Greedy)\n");
     printf("11. Quick Sort and Binary Search\n");
+    printf("12. Compare Charging Station Strategies\n");
 }
  
 
