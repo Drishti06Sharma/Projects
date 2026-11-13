@@ -24,6 +24,7 @@ void show_menu(void)
     printf("10. Automatic Charging Station Placement (Greedy)\n");
     printf("11. Quick Sort and Binary Search\n");
     printf("12. Compare Charging Station Strategies\n");
+    printf("13. Large Data Stress Test\n");
 }
  
 

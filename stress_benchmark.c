@@ -9,7 +9,7 @@
 #include "bellman_ford.h"
 
 #define STRESS_NODES 50
-#define REPETITIONS 500
+#define REPETITIONS 5000
 
 static int create_stress_graph(Graph *graph)
 {
