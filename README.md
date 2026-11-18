@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿# EV Charging Station Placement and Trip Planning System
 
 ## 1. Project Overview
@@ -134,3 +135,6 @@ Execution times are dependent on hardware, compiler and system conditions.
 ## 13. Conclusion
 
 The project demonstrates the application of graph algorithms, greedy strategies, sorting, searching and algorithm benchmarking in an electric vehicle trip-planning problem. The implemented scenarios demonstrate route calculation, charging station strategy comparison and shortest-path correctness on a synthetic large network.
+=======
+
+>>>>>>> origin/main
