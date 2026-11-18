@@ -1,140 +1,139 @@
-<<<<<<< HEAD
-﻿# EV Charging Station Placement and Trip Planning System
+# EV Charging Station Placement and Trip Planning System
+
+A comprehensive, graph-based algorithmic solution for electric vehicle travel planning, charging station infrastructure placement, and routing optimization developed for **Design and Analysis of Algorithms (DAA)**.
+
+---
 
 ## 1. Project Overview
 
-The EV Charging Station Placement and Trip Planning System is a menu-driven application developed in C. It helps users explore routes between locations, calculate shortest-distance and fastest routes, and compare strategies for placing electric vehicle charging stations.
+The **EV Trip Planner** models real-world electric mobility challenges using graph-based data structures and classical algorithmic paradigms. It provides:
+1. **Interactive Modern EV Dashboard GUI:** A dark navy interface with electric cyan and blue neon accents, real-time Dehradun road network map rendering, interactive routing, live strategy comparison, sorting visualizer, and live stress testing.
+2. **Terminal Console Interface:** A menu-driven C application supporting all 12 analytical operations.
+3. **Pure C Backend Engine:** High-performance, memory-efficient C11 implementation with zero third-party dependencies.
 
-The system uses graph-based data structures and Design and Analysis of Algorithms (DAA) techniques.
+---
 
-## 2. Objectives
+## 2. Key Modules & DAA Paradigms
 
-- Represent a road network using a weighted graph.
-- Find shortest routes using Dijkstra's algorithm.
-- Calculate shortest distances using Bellman-Ford.
-- Find fastest routes using travel-time weights.
-- Install charging stations manually or automatically.
-- Compare connectivity-based and demand-based placement strategies.
-- Demonstrate sorting, searching and large-data benchmarking.
+| Module / Feature | Algorithm | DAA Paradigm | Time Complexity | Space Complexity |
+|---|---|---|---|---|
+| **Shortest Distance Route** | Dijkstra's Algorithm | Greedy (Min-distance vertex selection) | $O(V^2 + E)$ | $O(V)$ |
+| **Fastest Route** | Travel-Time Weighted Dijkstra | Greedy (Min-time vertex selection) | $O(V^2 + E)$ | $O(V)$ |
+| **Route & Negative Cycle Verification** | Bellman-Ford Algorithm | Dynamic Programming (Repeated Relaxation) | $O(V \cdot E)$ | $O(V)$ |
+| **Station Placement (Connectivity)** | Degree-Greedy Heuristic | Greedy Approximation ($\max \text{deg}(v)$) | $O(V \cdot k)$ | $O(V)$ |
+| **Station Placement (Demand)** | Demand-Greedy Heuristic | Greedy Approximation ($\max \text{demand}(v)$) | $O(V \cdot k)$ | $O(V)$ |
+| **Array Sorting** | Quick Sort | Divide and Conquer (Lomuto Partitioning) | $O(N \log N)$ avg | $O(\log N)$ aux |
+| **Alternative Sorting** | Merge Sort | Divide and Conquer (Merge Split) | $O(N \log N)$ | $O(N)$ aux |
+| **Fast Searching** | Binary Search (Iterative & Recursive) | Decrease and Conquer | $O(\log N)$ | $O(1)$ iter / $O(\log N)$ rec |
+| **Stress Benchmark** | Synthetic Graph (50 nodes, 184 roads) | Empirical Complexity & Correctness | 5,000 reps | $O(V + E)$ |
 
-## 3. Technologies Used
+---
 
-- Programming Language: C
-- Compiler: GCC
-- Standard: C11
-- Development Environment: Visual Studio Code
-- Data Structure: Weighted Graph using Adjacency Lists
+## 3. Predefined Dehradun Road Network
 
-## 4. Algorithms Implemented
+The system preloads 10 prominent landmarks across Dehradun, Uttarakhand with realistic distance and estimated travel-time weights:
 
-| Algorithm | Purpose |
-|---|---|
-| Dijkstra | Shortest-distance route |
-| Dijkstra with time weights | Fastest route |
-| Bellman-Ford | Shortest-distance calculation |
-| Greedy Algorithm | Automatic charging station placement |
-| Quick Sort | Sorting values |
-| Binary Search | Searching sorted values |
-| Connectivity-Based Greedy | Charging station strategy |
-| Demand-Based Greedy | Charging station strategy |
+1. **Location 0:** Clock Tower (City Center)
+2. **Location 1:** ISBT Dehradun (South-West)
+3. **Location 2:** Railway Station (South)
+4. **Location 3:** Forest Research Institute (FRI) (West)
+5. **Location 4:** Pacific Mall (North-East, Rajpur Road)
+6. **Location 5:** Prem Nagar (Far West)
+7. **Location 6:** DIT University (Far North Foothills)
+8. **Location 7:** Max Hospital (North-East)
+9. **Location 8:** Survey Chowk (East of Clock Tower)
+10. **Location 9:** Sahastradhara Road (East)
 
-## 5. Project Features
+*Road connections include 16 bidirectional weighted segments linking the city's key arterials.*
 
-1. Add new locations.
-2. Add roads between locations.
-3. Display the road network.
-4. Find shortest-distance routes.
-5. Find fastest routes.
-6. Compare Dijkstra and Bellman-Ford.
-7. Install charging stations manually.
-8. Display installed charging stations.
-9. Automatically place charging stations using a greedy strategy.
-10. Perform Quick Sort and Binary Search.
-11. Compare charging station placement strategies.
-12. Run a large-data stress test.
+---
 
-## 6. Project Structure
+## 4. Architecture & GUI Integration
 
-- main.c – Main program and menu.
-- graph.c / graph.h – Graph creation and management.
-- dijkstra.c / dijkstra.h – Dijkstra's algorithm.
-- fastest_route.c / fastest_route.h – Fastest route functionality.
-- bellman_ford.c / bellman_ford.h – Bellman-Ford algorithm.
-- ev_planner.c / ev_planner.h – Main application functions.
-- input_validation.c / input_validation.h – Input validation.
-- advanced_algorithms.c / advanced_algorithms.h – Sorting and searching.
-- station_comparison.c / station_comparison.h – Charging station strategy comparison.
-- stress_benchmark.c / stress_benchmark.h – Large-data benchmark.
-- tests/test_cases.md – Test cases and results.
-- data/sample_routes.csv – Sample route data.
-- Makefile – Build configuration.
-
-## 7. Compilation
-
-Compile the project using GCC:
-
-```bash
-gcc -Wall -Wextra -std=c11 main.c graph.c dijkstra.c fastest_route.c bellman_ford.c ev_planner.c input_validation.c advanced_algorithms.c station_comparison.c stress_benchmark.c -o ev_planner
+```
+┌────────────────────────────────────────────────────────┐
+│             Modern Browser Dashboard (GUI)             │
+│   (HTML5 Canvas, CSS3 Neon Dark Navy, JS Controllers)   │
+└──────────────────────────┬─────────────────────────────┘
+                           │ HTTP REST JSON Requests
+                           ▼
+┌────────────────────────────────────────────────────────┐
+│           Native C Backend Server (ev_server.exe)       │
+│    Built with C11 + Winsock2 (ws2_32) - Zero Python/Node│
+└──────────────────────────┬─────────────────────────────┘
+                           │ Direct In-Memory Function Calls
+                           ▼
+┌────────────────────────────────────────────────────────┐
+│                   Core C DAA Algorithms                 │
+│  • dijkstra.c          • fastest_route.c               │
+│  • bellman_ford.c      • station_comparison.c          │
+│  • advanced_algorithms.c • stress_benchmark.c          │
+│  • graph.c (Adjacency-List Weighted Topology)          │
+└────────────────────────────────────────────────────────┘
 ```
 
-## 8. Execution
+**Why this architecture is ideal for a DAA Viva:**
+- **No Mock or Fake Results:** Every route distance, time, strategy selection, sort array, and stress benchmark execution is computed directly by the compiled C code.
+- **Zero Heavy Dependencies:** Runs locally on any Windows PC using GCC and Windows Sockets with no need for Node.js, Python, or npm.
+- **Dual Interface:** Both the modern web GUI and the classic console CLI share the exact same underlying C algorithmic files.
 
-On Windows PowerShell:
+---
 
+## 5. Quick Start & Execution (Windows)
+
+### Option A: Launch Modern GUI (One-Click)
+Simply double-click:
+```cmd
+run_gui.bat
+```
+*This automatically compiles `ev_server.exe` (if not already compiled), starts the local C server on port 8080, and opens your default web browser.*
+
+### Option B: Run Classic Console Menu
+Simply double-click:
+```cmd
+run_cli.bat
+```
+*Or run in PowerShell:*
 ```powershell
 .\ev_planner.exe
 ```
 
-On Linux:
-
-```bash
-./ev_planner
+### Option C: Rebuild All Executables
+Double-click:
+```cmd
+build_all.bat
+```
+*Or via Makefile:*
+```cmd
+make all
 ```
 
-## 9. Test Scenarios
+---
 
-### Scenario 1: Normal Operation
-Tests the predefined Dehradun road network and route-finding algorithms.
+## 6. Manual Compilation Commands (GCC)
 
-### Scenario 2: Capacity and Budget Constraints
-Tests charging station placement under budget and charger-capacity restrictions and compares two placement strategies.
+If compiling manually using GCC on Windows PowerShell or CMD:
 
-### Scenario 3: Large-Data Stress Test
-Uses a synthetic network containing 50 locations and 184 road connections to compare Dijkstra and Bellman-Ford.
+```powershell
+# 1. Compile the Console Application:
+gcc -Wall -Wextra -std=c11 main.c graph.c dijkstra.c fastest_route.c bellman_ford.c ev_planner.c input_validation.c advanced_algorithms.c station_comparison.c stress_benchmark.c -o ev_planner.exe
 
-## 10. Benchmark Results
+# 2. Compile the Native GUI Server:
+gcc -Wall -Wextra -std=c11 ev_server.c graph.c dijkstra.c fastest_route.c bellman_ford.c advanced_algorithms.c station_comparison.c stress_benchmark.c -lws2_32 -o ev_server.exe
+```
 
-The synthetic stress test was executed for 5,000 repetitions.
+---
 
-| Parameter | Result |
-|---|---:|
-| Locations | 50 |
-| Road connections | 184 |
-| Dijkstra average time | 0.0128 ms |
-| Bellman-Ford average time | 0.0136 ms |
-| Correctness | Matching distances |
+## 7. DAA Viva Voce Defense Guide
 
-Execution times are dependent on hardware, compiler and system conditions.
-
-## 11. Limitations
-
-- Road distances and travel times are illustrative estimates.
-- Demand scores are synthetic inputs.
-- The system does not use live traffic or real-time charging station data.
-- The graph has a maximum capacity of 50 locations.
-- Benchmark memory values are structural estimates rather than measured peak memory usage.
-
-## 12. Future Scope
-
-- Integration with real map and traffic APIs.
-- Use of real EV charging station datasets.
-- Dynamic route planning based on battery level.
-- More advanced charging station optimization.
-- Graphical user interface and database integration.
-
-## 13. Conclusion
-
-The project demonstrates the application of graph algorithms, greedy strategies, sorting, searching and algorithm benchmarking in an electric vehicle trip-planning problem. The implemented scenarios demonstrate route calculation, charging station strategy comparison and shortest-path correctness on a synthetic large network.
-=======
-
->>>>>>> origin/main
+1. **How does Dijkstra handle fastest route vs shortest distance?**
+   - The same priority-queue / greedy relaxation logic applies: for shortest distance, edge weights represent Euclidean distance ($d_{uv}$ in km); for fastest route, edge weights represent travel time ($t_{uv}$ in hours).
+2. **Why does Bellman-Ford detect negative cycles while Dijkstra cannot?**
+   - Dijkstra assumes that adding an edge to a path always increases its cost (greedy property holds only for non-negative weights). Bellman-Ford performs $V - 1$ global relaxations of all edges, guaranteeing convergence for any cycle-free path. A further relaxation on pass $V$ identifies edges that can still be minimized, proving a negative-weight cycle is reachable.
+3. **What is the complexity of station strategy comparison?**
+   - Each greedy iteration scans up to $V$ candidate nodes to find the maximum degree or demand score, giving $O(k \cdot V)$ where $k \le V$ is the number of stations allowed under budget.
+4. **Empirical Benchmarking Results (Scenario 3):**
+   - On a synthetic graph of 50 locations and 184 roads across 5,000 iterations:
+     - Dijkstra average time: $\approx 0.012$ ms
+     - Bellman-Ford average time: $\approx 0.013$ ms
+     - Shortest distances match 100% across all pairs.

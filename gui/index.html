@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EV Trip Planner – EV Charging Station Placement & Route Optimization</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/gui/style.css">
+  <style>
+    /* Critical Inline Fallback Styles to guarantee dark theme and prevent layout shift */
+    :root {
+      --bg-primary: #070b14;
+      --bg-secondary: #0d1527;
+      --bg-sidebar: #0a0f1d;
+      --bg-card: rgba(15, 23, 42, 0.85);
+      --border-card: rgba(0, 240, 255, 0.18);
+      --accent-cyan: #00f0ff;
+      --accent-blue: #0070f3;
+      --accent-blue-light: #38bdf8;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    html, body {
+      background-color: #070b14 !important;
+      color: #f8fafc !important;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+      min-height: 100vh;
+    }
+    body {
+      display: flex;
+    }
+    svg {
+      width: 18px;
+      height: 18px;
+      max-width: 100%;
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .hidden {
+      display: none !important;
+    }
+    .page-container {
+      display: none;
+    }
+    .page-container.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="brand-section">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#ffffff" style="width:22px;height:22px;">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>EV Trip Planner</h1>
+        <span>DAA Engine • C11</span>
+      </div>
+    </div>
+
+    <ul class="nav-menu">
+      <li class="nav-item active">
+        <button type="button" data-page="page-overview">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+          Overview Dashboard
+        </button>
+      </li>
+      <li class="nav-item">
+        <button type="button" data-page="page-network">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
+          </svg>
+          Dehradun Road Network
+        </button>
+      </li>
+      <li class="nav-item">
+        <button type="button" data-page="page-stations">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+          Charging Stations
+        </button>
+      </li>
+      <li class="nav-item">
+        <button type="button" data-page="page-strategies">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          Strategy Comparison
+        </button>
+      </li>
+      <li class="nav-item">
+        <button type="button" data-page="page-sorting">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
+          </svg>
+          Quick Sort & Search
+        </button>
+      </li>
+      <li class="nav-item">
+        <button type="button" data-page="page-stress">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+          Stress Benchmark
+        </button>
+      </li>
+      <li class="nav-item">
+        <button type="button" data-page="page-viva">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+          DAA Viva Guide
+        </button>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="status-badge">
+        <div class="status-dot"></div>
+        <span id="backend-status-text">C Engine Ready (Port 8080)</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Wrapper -->
+  <div class="main-wrapper">
+
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="header-title">
+        <h2>Dehradun EV Mobility Analytics Dashboard</h2>
+        <p>Weighted Graph Routing & Greedy Infrastructure Optimization</p>
+      </div>
+
+      <div class="header-actions">
+        <div class="stat-chip">
+          <span>Locations:</span>
+          <b id="hdr-nodes">10</b>
+        </div>
+        <div class="stat-chip">
+          <span>Roads:</span>
+          <b id="hdr-edges">16</b>
+        </div>
+        <button class="btn btn-outline-cyan" id="btn-reset-network">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/>
+          </svg>
+          Reset Network
+        </button>
+      </div>
+    </header>
+
+    <!-- PAGE 1: OVERVIEW DASHBOARD -->
+    <section class="page-container active" id="page-overview">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>
+            </svg>
+          </div>
+          <div class="metric-content">
+            <div class="metric-label">Total Locations</div>
+            <div class="metric-value" id="stat-total-nodes">10</div>
+            <div class="metric-sub">Dehradun Landmarks</div>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>
+            </svg>
+          </div>
+          <div class="metric-content">
+            <div class="metric-label">Road Segments</div>
+            <div class="metric-value" id="stat-total-edges">16</div>
+            <div class="metric-sub">Bidirectional Edges</div>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+          </div>
+          <div class="metric-content">
+            <div class="metric-label">Active EV Stations</div>
+            <div class="metric-value" id="stat-total-stations">0</div>
+            <div class="metric-sub">Installed Hubs</div>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+            </svg>
+          </div>
+          <div class="metric-content">
+            <div class="metric-label">Total Charger Bays</div>
+            <div class="metric-value" id="stat-total-chargers">0</div>
+            <div class="metric-sub">High-Voltage Bays</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Cards -->
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px;">
+        <div class="card">
+          <div class="card-title">
+            <span>Project Architecture & Algorithmic Blueprint</span>
+            <span class="tag">DAA Coursework</span>
+          </div>
+          <p style="color: #94a3b8; font-size: 0.85rem; line-height: 1.6; margin-bottom: 16px;">
+            This system models the Dehradun city transportation network as an adjacency-list weighted graph. It demonstrates core Design and Analysis of Algorithms (DAA) techniques including <b>Dijkstra's Algorithm</b> (shortest path & fastest route), <b>Bellman-Ford</b> (edge relaxation & cycle verification), <b>Greedy Heuristics</b> for infrastructure placement under budget and capacity constraints, and <b>Quick Sort / Binary Search</b>.
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px;">
+            <div style="background: rgba(7, 11, 20, 0.7); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 8px;">
+              <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase;">Shortest Distance</div>
+              <div style="font-weight: 700; color: #00f0ff; margin-top: 4px; font-size: 0.95rem;">Dijkstra O(V² + E)</div>
+            </div>
+            <div style="background: rgba(7, 11, 20, 0.7); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 8px;">
+              <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase;">Fastest Path</div>
+              <div style="font-weight: 700; color: #38bdf8; margin-top: 4px; font-size: 0.95rem;">Time-Weighted Dijkstra</div>
+            </div>
+            <div style="background: rgba(7, 11, 20, 0.7); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 8px;">
+              <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase;">Edge Relaxation</div>
+              <div style="font-weight: 700; color: #10b981; margin-top: 4px; font-size: 0.95rem;">Bellman-Ford O(V · E)</div>
+            </div>
+            <div style="background: rgba(7, 11, 20, 0.7); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 8px;">
+              <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase;">Station Placement</div>
+              <div style="font-weight: 700; color: #f59e0b; margin-top: 4px; font-size: 0.95rem;">Dual Greedy Strategy</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div class="card-title">
+              <span>Quick Route Launcher</span>
+              <span class="tag">Instant Trip</span>
+            </div>
+            <p style="color: #94a3b8; font-size: 0.82rem; margin-bottom: 14px; line-height: 1.5;">
+              Calculate the primary benchmark trip from <b>Clock Tower (ID 0)</b> to <b>DIT University (ID 6)</b>:
+            </p>
+          </div>
+          <button class="btn btn-primary" onclick="switchPage('page-network'); setTimeout(calculateRoute, 150);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/>
+            </svg>
+            Launch Dehradun Route
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 2: DEHRADUN NETWORK VISUALIZATION & ROUTE PLANNER -->
+    <section class="page-container" id="page-network">
+      <div class="network-layout">
+        
+        <!-- Left Column: Interactive Map Canvas -->
+        <div class="canvas-container">
+          <div class="canvas-controls">
+            <button class="canvas-btn" id="btn-zoom-in" title="Zoom In">+</button>
+            <button class="canvas-btn" id="btn-zoom-out" title="Zoom Out">−</button>
+            <button class="canvas-btn" id="btn-reset-zoom" title="Reset View">⟲</button>
+          </div>
+
+          <div class="canvas-legend">
+            <div class="legend-item">
+              <div class="legend-dot" style="background: #10b981;"></div>
+              <span>Source</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background: #f43f5e;"></div>
+              <span>Destination</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background: #0070f3; border: 1px solid #00f0ff;"></div>
+              <span>Charging Station</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background: #1e293b;"></div>
+              <span>Landmark</span>
+            </div>
+          </div>
+
+          <canvas id="networkCanvas"></canvas>
+        </div>
+
+        <!-- Right Column: Control & Results Panel -->
+        <div class="control-panel">
+          <div class="card">
+            <div class="card-title">
+              <span>Route Optimization Controls</span>
+              <span class="tag">C Engine</span>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 10px;">
+              <label>Source Location</label>
+              <select id="route-source" class="form-control"></select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 10px;">
+              <label>Destination Location</label>
+              <select id="route-dest" class="form-control"></select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label>Optimization Algorithm</label>
+              <select id="route-algo" class="form-control">
+                <option value="dijkstra">Dijkstra – Shortest Distance (km)</option>
+                <option value="fastest">Fastest Route – Travel Time (hours)</option>
+                <option value="bellman_ford">Bellman-Ford – Edge Relaxation & Cycle Check</option>
+              </select>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-primary" id="btn-calc-route" style="flex: 1;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+                Calculate Route
+              </button>
+              <button class="btn btn-secondary" id="btn-swap-route" title="Swap Source/Destination">
+                ⇅
+              </button>
+            </div>
+          </div>
+
+          <!-- Results Panel -->
+          <div class="route-results hidden" id="route-results-box">
+            <div class="route-summary-header">
+              <h4 id="res-algo-name">Dijkstra Shortest Route</h4>
+              <span class="tag" id="res-complexity">O(V² + E)</span>
+            </div>
+
+            <div class="route-telemetry-grid">
+              <div class="telemetry-box">
+                <div class="label">Total Distance</div>
+                <div class="val" id="res-distance">-- km</div>
+              </div>
+              <div class="telemetry-box">
+                <div class="label">Estimated Travel Time</div>
+                <div class="val" id="res-time">-- hrs</div>
+              </div>
+              <div class="telemetry-box">
+                <div class="label">C Runtime</div>
+                <div class="val" id="res-exec-time" style="color: #38bdf8;">-- ms</div>
+              </div>
+              <div class="telemetry-box">
+                <div class="label">Status</div>
+                <div class="val" style="color: #10b981; font-size: 0.95rem;">✓ OPTIMAL</div>
+              </div>
+            </div>
+
+            <!-- Path List -->
+            <div style="font-size: 0.72rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; margin-top: 10px;">Route Sequence</div>
+            <div class="path-stepper" id="res-path-list"></div>
+
+            <!-- Stations on Route -->
+            <div style="font-size: 0.72rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; margin-top: 12px; margin-bottom: 4px;">Charging Stations En Route</div>
+            <div id="res-stations-on-route" style="display: flex; flex-direction: column; gap: 6px;"></div>
+
+            <!-- Step by Step Hops Table -->
+            <div style="font-size: 0.72rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; margin-top: 12px; margin-bottom: 4px;">Road Segment Telemetry</div>
+            <div style="max-height: 160px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.06); border-radius: 6px;">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Segment</th>
+                    <th>Distance</th>
+                    <th>Time</th>
+                    <th>Speed</th>
+                  </tr>
+                </thead>
+                <tbody id="res-hops-table-body"></tbody>
+              </table>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- PAGE 3: CHARGING STATION MANAGEMENT -->
+    <section class="page-container" id="page-stations">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+        
+        <!-- Manual Station Installation -->
+        <div class="card">
+          <div class="card-title">
+            <span>Manual Station Installation</span>
+            <span class="tag">Direct Site Install</span>
+          </div>
+          <form id="form-install-station">
+            <div class="form-group" style="margin-bottom: 10px;">
+              <label>Target Location</label>
+              <select id="install-loc-id" class="form-control" required></select>
+            </div>
+            <div class="form-group" style="margin-bottom: 10px;">
+              <label>Number of Charger Bays</label>
+              <input type="number" id="install-chargers" class="form-control" min="1" max="50" value="4" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label>Installation Cost (₹)</label>
+              <input type="number" step="100" id="install-cost" class="form-control" min="100" value="1000" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+              Install Charging Station
+            </button>
+          </form>
+        </div>
+
+        <!-- Automatic Greedy Placement -->
+        <div class="card">
+          <div class="card-title">
+            <span>Automatic Greedy Placement</span>
+            <span class="tag">Connectivity Heuristic</span>
+          </div>
+          <p style="color: #94a3b8; font-size: 0.82rem; margin-bottom: 12px; line-height: 1.5;">
+            The greedy placement algorithm selects locations with the highest road connectivity (degree of the vertex) that do not yet have a station, iteratively installing bays until the total budget is exhausted.
+          </p>
+          <form id="form-auto-station">
+            <div class="form-group" style="margin-bottom: 8px;">
+              <label>Total Capital Budget (₹)</label>
+              <input type="number" step="100" id="auto-budget" class="form-control" min="100" value="5000" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 8px;">
+              <label>Cost per Station (₹)</label>
+              <input type="number" step="50" id="auto-cost" class="form-control" min="50" value="1000" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label>Chargers per Station</label>
+              <input type="number" id="auto-chargers" class="form-control" min="1" value="4" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+              Execute Greedy Placement
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- Currently Installed Stations Table -->
+      <div class="card">
+        <div class="card-title">
+          <span>Active Charging Network Infrastructure</span>
+          <span class="tag">Installed Hubs</span>
+        </div>
+        <table class="table-custom">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Location</th>
+              <th>Charger Bays</th>
+              <th>Installation Cost</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="installed-stations-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PAGE 4: STRATEGY COMPARISON (CONNECTIVITY VS DEMAND) -->
+    <section class="page-container" id="page-strategies">
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-title">
+          <span>Charging Station Placement Strategy Comparison Lab</span>
+          <span class="tag">Dual Heuristics Analysis</span>
+        </div>
+        <p style="color: #94a3b8; font-size: 0.84rem; line-height: 1.6;">
+          This module compares two classical DAA greedy paradigms under identical capital budget and charger capacity constraints:
+          <br><b>Strategy A (Connectivity-Based Greedy):</b> Prioritizes nodes with maximum degree (most incident road connections) to optimize graph-wide reachability.
+          <br><b>Strategy B (Demand-Based Greedy):</b> Prioritizes locations with the highest simulated priority traffic demand scores to maximize captured EV charging demand.
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 14px;">
+          <div class="form-group">
+            <label>Total Budget (₹)</label>
+            <input type="number" id="strat-budget" class="form-control" value="2000" min="100">
+          </div>
+          <div class="form-group">
+            <label>Cost per Station (₹)</label>
+            <input type="number" id="strat-cost" class="form-control" value="1000" min="100">
+          </div>
+          <div class="form-group">
+            <label>Chargers per Station</label>
+            <input type="number" id="strat-chargers" class="form-control" value="10" min="1">
+          </div>
+          <div class="form-group">
+            <label>Max Available Chargers</label>
+            <input type="number" id="strat-max-cap" class="form-control" value="50" min="1">
+          </div>
+        </div>
+
+        <!-- Editable Demand Scores -->
+        <div style="margin-top: 16px;">
+          <label style="font-size: 0.78rem; font-weight: 600; color: #94a3b8;">Simulated Demand Priority Scores for Locations (1–100):</label>
+          <div class="demand-table-container">
+            <table class="table-custom">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Location Name</th>
+                  <th>Connectivity</th>
+                  <th>Demand Score</th>
+                </tr>
+              </thead>
+              <tbody id="demand-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="btn-compare-strategies" style="margin-top: 16px; width: 100%;">
+          Run Dual Strategy Comparison (C Backend)
+        </button>
+      </div>
+
+      <!-- Comparison Results Grid -->
+      <div class="strategy-grid hidden" id="strat-res-container">
+        
+        <!-- Strategy A Card -->
+        <div class="strategy-card highlight">
+          <div>
+            <span class="strategy-badge badge-strat-a">Strategy A</span>
+            <h3 style="font-size: 1.1rem; margin-top: 6px;">Connectivity-Based Greedy</h3>
+            <p style="font-size: 0.76rem; color: #94a3b8;">Greedy choice: argmax { road_connectivity(v) }</p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div class="telemetry-box">
+              <div class="label">Stations Placed</div>
+              <div class="val" id="strat-a-count">0</div>
+            </div>
+            <div class="telemetry-box">
+              <div class="label">Total Chargers</div>
+              <div class="val" id="strat-a-chargers">0</div>
+            </div>
+            <div class="telemetry-box">
+              <div class="label">Capital Invested</div>
+              <div class="val" id="strat-a-cost">₹0</div>
+            </div>
+            <div class="telemetry-box">
+              <div class="label">Captured Priority</div>
+              <div class="val" id="strat-a-score" style="color: #38bdf8;">0</div>
+            </div>
+          </div>
+
+          <div>
+            <h5 style="font-size: 0.78rem; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Selected Locations</h5>
+            <ul class="station-list" id="strat-a-stations"></ul>
+          </div>
+        </div>
+
+        <!-- Strategy B Card -->
+        <div class="strategy-card highlight">
+          <div>
+            <span class="strategy-badge badge-strat-b">Strategy B</span>
+            <h3 style="font-size: 1.1rem; margin-top: 6px;">Demand-Based Greedy</h3>
+            <p style="font-size: 0.76rem; color: #94a3b8;">Greedy choice: argmax { simulated_demand(v) }</p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div class="telemetry-box">
+              <div class="label">Stations Placed</div>
+              <div class="val" id="strat-b-count">0</div>
+            </div>
+            <div class="telemetry-box">
+              <div class="label">Total Chargers</div>
+              <div class="val" id="strat-b-chargers">0</div>
+            </div>
+            <div class="telemetry-box">
+              <div class="label">Capital Invested</div>
+              <div class="val" id="strat-b-cost">₹0</div>
+            </div>
+            <div class="telemetry-box">
+              <div class="label">Captured Priority</div>
+              <div class="val" id="strat-b-score" style="color: #10b981;">0</div>
+            </div>
+          </div>
+
+          <div>
+            <h5 style="font-size: 0.78rem; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Selected Locations</h5>
+            <ul class="station-list" id="strat-b-stations"></ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- PAGE 5: SORTING & SEARCHING SUITE -->
+    <section class="page-container" id="page-sorting">
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-title">
+          <span>Divide-and-Conquer Sorting & Binary Search Suite</span>
+          <span class="tag">DAA Classical Algorithms</span>
+        </div>
+        <p style="color: #94a3b8; font-size: 0.84rem; line-height: 1.6; margin-bottom: 14px;">
+          Demonstrates student implementations of <b>Quick Sort</b>, <b>Merge Sort</b>, and <b>Binary Search</b> (Iterative & Recursive) running directly in C. The sorting routine can be used to order candidate stations or telemetry distances in O(N log N) time prior to binary search queries in O(log N).
+        </p>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label>Input Integer Array (Comma separated)</label>
+            <input type="text" id="sort-array-input" class="form-control" value="45, 12, 78, 23, 9, 56, 34, 89">
+          </div>
+          <div class="form-group">
+            <label>Search Key</label>
+            <input type="number" id="search-key-input" class="form-control" value="23">
+          </div>
+          <div class="form-group">
+            <label>Sorting Algorithm</label>
+            <select id="sort-algo-select" class="form-control">
+              <option value="quick">Quick Sort (Partitioning)</option>
+              <option value="merge">Merge Sort (Divide & Conquer)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Search Method</label>
+            <select id="search-algo-select" class="form-control">
+              <option value="iterative">Iterative Binary Search</option>
+              <option value="recursive">Recursive Binary Search</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="btn-run-sort-search" style="margin-top: 16px; width: 100%;">
+          Execute C Sorting & Search
+        </button>
+      </div>
+
+      <!-- Sorting Visualizer Output -->
+      <div class="card hidden" id="sort-results-card">
+        <div class="card-title">
+          <span>Sorted Array Visualizer</span>
+          <div style="display: flex; gap: 8px;">
+            <span class="tag" id="sort-algo-badge">QUICK SORT</span>
+            <span class="tag" id="sort-complexity-badge">O(N log N)</span>
+          </div>
+        </div>
+
+        <div class="array-visualizer" id="array-bars-container"></div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(7, 11, 20, 0.7); padding: 12px; border-radius: 8px;">
+          <div>
+            <div style="font-size: 0.72rem; color: #94a3b8; text-transform: uppercase;">Binary Search Result</div>
+            <div id="search-res-index" style="font-size: 1.05rem; margin-top: 2px;">Searching...</div>
+          </div>
+          <div>
+            <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase;">Execution Latency</div>
+            <div id="sort-exec-time" style="font-size: 1.05rem; font-weight: 700; color: #00f0ff;">0.00 µs</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 6: STRESS BENCHMARK -->
+    <section class="page-container" id="page-stress">
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-title">
+          <span>Large-Data Stress Benchmark (Scenario 3)</span>
+          <span class="tag">Empirical Complexity</span>
+        </div>
+        <p style="color: #94a3b8; font-size: 0.84rem; line-height: 1.6; margin-bottom: 14px;">
+          Generates a synthetic dense road network consisting of <b>50 locations</b> and <b>184 road connections</b> with deterministic edge weights. Executes thousands of iterations comparing <b>Dijkstra</b> vs <b>Bellman-Ford</b> to empirically measure CPU execution time, verify correctness (matching shortest distances), and evaluate memory overhead.
+        </p>
+
+        <div style="display: flex; gap: 14px; align-items: flex-end;">
+          <div class="form-group" style="width: 220px;">
+            <label>Algorithm Repetitions</label>
+            <input type="number" id="stress-reps-input" class="form-control" value="5000" min="100" max="50000" step="500">
+          </div>
+          <button class="btn btn-primary" id="btn-run-stress-test" style="height: 38px;">
+            <span id="stress-spinner" class="hidden" style="display:inline-block; animation: spin 1s infinite linear; margin-right: 4px;">⚙</span>
+            Execute Live C Benchmark
+          </button>
+        </div>
+      </div>
+
+      <!-- Benchmark Results -->
+      <div class="hidden" id="stress-res-container">
+        <div class="benchmark-display">
+          
+          <div class="benchmark-stat-card">
+            <h4>Synthetic Network Size</h4>
+            <div class="big-num"><span id="bench-nodes">50</span> nodes</div>
+            <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 4px;"><span id="bench-edges">184</span> road connections</div>
+            <div style="font-size: 0.74rem; color: #38bdf8; margin-top: 3px;"><span id="bench-reps">5,000</span> repetitions</div>
+          </div>
+
+          <div class="benchmark-stat-card">
+            <h4>Dijkstra Average CPU Time</h4>
+            <div class="big-num" id="bench-dijkstra-time">0.012000 ms</div>
+            <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 4px;">Complexity: O(V² + E)</div>
+          </div>
+
+          <div class="benchmark-stat-card">
+            <h4>Bellman-Ford Average CPU Time</h4>
+            <div class="big-num" id="bench-bellman-time" style="color: #38bdf8;">0.013200 ms</div>
+            <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 4px;">Complexity: O(V · E)</div>
+          </div>
+
+          <div class="benchmark-stat-card">
+            <h4>Correctness Verification</h4>
+            <div class="big-num" id="bench-correctness" style="font-size: 1.25rem;">
+              <span class="pass-tag">✓ PASS: Distances Match</span>
+            </div>
+            <div style="font-size: 0.76rem; color: #94a3b8; margin-top: 4px;">Tolerance: |d_dijk - d_bf| &lt; 1e-6</div>
+          </div>
+
+        </div>
+
+        <!-- Structural Memory Estimation -->
+        <div class="card" style="margin-top: 20px;">
+          <div class="card-title">
+            <span>Structural Memory Estimation (DAA Footprint Analysis)</span>
+            <span class="tag">Static RAM Footprint</span>
+          </div>
+          <table class="table-custom">
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Data Structure</th>
+                <th>Theoretical Space</th>
+                <th>Estimated Memory</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Graph Topology (50 Nodes & Edges)</td>
+                <td><code>Graph</code> struct (Adjacency Lists)</td>
+                <td>O(V + E)</td>
+                <td id="bench-mem-graph">63,608 bytes</td>
+              </tr>
+              <tr>
+                <td>Distance & Predecessor Arrays</td>
+                <td><code>double[50]</code> & <code>int[50]</code></td>
+                <td>O(V)</td>
+                <td id="bench-mem-dist">600 bytes</td>
+              </tr>
+              <tr>
+                <td>Dijkstra Visited Array</td>
+                <td><code>int[50]</code></td>
+                <td>O(V)</td>
+                <td id="bench-mem-visited">200 bytes</td>
+              </tr>
+              <tr>
+                <td>Bellman-Ford Per-Node Overhead</td>
+                <td>In-place edge relaxation</td>
+                <td>O(1)</td>
+                <td>0 bytes</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE 7: DAA VIVA DEFENSE GUIDE -->
+    <section class="page-container" id="page-viva">
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-title">
+          <span>DAA Viva Voce & Oral Defense Guide</span>
+          <span class="tag">Examiner Q&A Reference</span>
+        </div>
+        <p style="color: #94a3b8; font-size: 0.84rem; line-height: 1.6;">
+          Prepared specifically for <b>CSEG3053: Design and Analysis of Algorithms</b> viva defense. Use these concise answers to address questions on algorithm selection, recurrence relations, complexity proofs, and design paradigms.
+        </p>
+      </div>
+
+      <div class="viva-card-grid">
+        
+        <div class="viva-card">
+          <h3>1. Why Dijkstra vs Bellman-Ford?</h3>
+          <p>
+            <b>Dijkstra:</b> Uses a greedy approach, repeatedly selecting the unvisited node with the smallest tentative distance. It operates in <code>O(V² + E)</code> (or <code>O((V+E) log V)</code> with min-heap). It requires all edge weights to be non-negative.
+          </p>
+          <p>
+            <b>Bellman-Ford:</b> Uses Dynamic Programming / repeated relaxation of all <code>|E|</code> edges <code>|V| - 1</code> times. It runs in <code>O(V · E)</code> and correctly handles negative edge weights (such as downhill regenerative braking in EVs) while detecting negative-weight cycles.
+          </p>
+        </div>
+
+        <div class="viva-card">
+          <h3>2. Negative-Cycle Detection Proof</h3>
+          <p>
+            In a graph with no negative cycles, any shortest simple path contains at most <code>|V| - 1</code> edges. Thus, <code>|V| - 1</code> iterations of edge relaxation suffice.
+          </p>
+          <div class="code-snippet">
+if (dist[u] + weight &lt; dist[v]) {
+    // Negative cycle detected!
+    return -1;
+}
+          </div>
+          <p>
+            If any distance decreases on the <code>|V|</code>-th pass, a negative cycle must exist along a reachable path.
+          </p>
+        </div>
+
+        <div class="viva-card">
+          <h3>3. Greedy Choice in Station Placement</h3>
+          <p>
+            Station placement is modeled on the <b>Set Cover / Maximum Coverage Problem</b>, which is NP-hard. We implement two polynomial-time greedy approximations:
+          </p>
+          <ul>
+            <li><b>Strategy A (Connectivity):</b> Locally picks vertex with max remaining degree <code>d(v)</code>.</li>
+            <li><b>Strategy B (Demand):</b> Locally picks vertex with max simulated demand score.</li>
+          </ul>
+          <p>
+            Greedy heuristics provide a known <code>(1 - 1/e) ≈ 63.2%</code> approximation ratio for submodular coverage objectives.
+          </p>
+        </div>
+
+        <div class="viva-card">
+          <h3>4. Quick Sort & Recurrence Relations</h3>
+          <p>
+            <b>Recurrence (Best/Average Case):</b><br>
+            <code>T(N) = 2T(N/2) + O(N)</code> → By Master Theorem (Case 2), <code>T(N) = O(N log N)</code>.
+          </p>
+          <p>
+            <b>Worst Case:</b><br>
+            When partitions are maximally unbalanced (0 and N-1 elements), <code>T(N) = T(N - 1) + O(N) = O(N²)</code>.
+          </p>
+          <p>
+            <b>Binary Search:</b><br>
+            <code>T(N) = T(N/2) + O(1)</code> → <code>T(N) = O(log N)</code>.
+          </p>
+        </div>
+
+        <div class="viva-card">
+          <h3>5. Adjacency List Graph Data Structure</h3>
+          <p>
+            The network is stored as an array of <code>Node</code> structures, each containing an adjacency array of <code>Edge</code> records:
+          </p>
+          <div class="code-snippet">
+typedef struct {
+    int destination;
+    double distance;
+    double time;
+} Edge;
+
+typedef struct {
+    char name[MAX_NAME];
+    int edge_count;
+    Edge edges[MAX_NODES];
+    int has_station;
+} Node;
+          </div>
+          <p>Space efficiency: <code>O(V + E)</code> instead of <code>O(V²)</code> matrix storage.</p>
+        </div>
+
+        <div class="viva-card">
+          <h3>6. Integration with GUI Architecture</h3>
+          <p>
+            The GUI is not a mockup! The native C executable (<code>ev_server.exe</code>) uses Winsock2 to expose a local REST API that invokes the actual C algorithms (<code>dijkstra()</code>, <code>fastest_route()</code>, <code>bellman_ford()</code>, <code>run_greedy_strategy()</code>, <code>quick_sort()</code>) in memory on the actual graph data structure.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <script src="app.js"></script>
+  <script src="/gui/app.js"></script>
+</body>
+</html>

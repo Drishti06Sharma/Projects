@@ -1,0 +1,17 @@
+route_id,source_name,dest_name,distance_km,travel_time_hrs,road_type
+1,Clock Tower,ISBT Dehradun,5.50,0.20,Arterial
+2,Clock Tower,Railway Station,2.00,0.10,City Urban
+3,Clock Tower,Forest Research Institute,4.50,0.18,Arterial
+4,Clock Tower,Pacific Mall,6.50,0.22,Rajpur Road
+5,Clock Tower,Survey Chowk,1.80,0.10,City Urban
+6,ISBT Dehradun,Railway Station,4.00,0.15,Haridwar Bypass
+7,ISBT Dehradun,Prem Nagar,8.50,0.30,Chakrata Road
+8,Railway Station,Survey Chowk,2.50,0.12,City Urban
+9,Forest Research Institute,Prem Nagar,6.00,0.22,Chakrata Road
+10,Pacific Mall,Max Hospital,4.00,0.15,Mussoorie Diversion
+11,Pacific Mall,Sahastradhara Road,6.50,0.25,Cross Link
+12,Pacific Mall,DIT University,12.00,0.35,Mussoorie Road
+13,Prem Nagar,DIT University,18.00,0.45,Ring Road
+14,DIT University,Sahastradhara Road,14.00,0.40,Hill Bypass
+15,Max Hospital,Survey Chowk,4.00,0.16,Rajpur Link
+16,Sahastradhara Road,Survey Chowk,8.00,0.25,Arterial

@@ -4,6 +4,8 @@
 #include "ev_planner.h"
 #include "input_validation.h"
 #include "advanced_algorithms.h"
+#include "station_comparison.h"
+#include "stress_benchmark.h"
 
 int main(void)
 {
@@ -59,19 +61,27 @@ int main(void)
                 break;
 
             case 9:
-                printf("Exiting EV Trip Planner. Goodbye!\n");
-                return 0;
-
-            case 10:
                 automatic_station_placement_menu(&graph);
                 break;
 
-            case 11:
+            case 10:
                 advanced_algorithms_menu();
                 break;
 
+            case 11:
+                compare_station_strategies(&graph);
+                break;
+
+            case 12:
+                run_stress_benchmark();
+                break;
+
+            case 13:
+                printf("Exiting EV Trip Planner. Goodbye!\n");
+                return 0;
+
             default:
-                printf("Invalid choice. Please enter 1 to 11.\n");
+                printf("Invalid choice. Please enter 1 to 13.\n");
         }
     }
 

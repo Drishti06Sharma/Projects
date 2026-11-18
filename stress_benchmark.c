@@ -7,6 +7,7 @@
 #include "graph.h"
 #include "dijkstra.h"
 #include "bellman_ford.h"
+#include "stress_benchmark.h"
 
 #define STRESS_NODES 50
 #define REPETITIONS 5000
@@ -51,7 +52,7 @@ static int create_stress_graph(Graph *graph)
     return 1;
 }
 
-void run_stress_benchmark(void)
+int execute_stress_benchmark(int repetitions, StressBenchmarkResult *result)
 {
     Graph test_graph = {0};
 
@@ -68,14 +69,12 @@ void run_stress_benchmark(void)
     clock_t start, end;
     double dijkstra_time, bellman_time;
 
-    printf("\n====================================\n");
-    printf("       LARGE DATA STRESS TEST\n");
-    printf("====================================\n");
+    if (repetitions <= 0)
+        repetitions = REPETITIONS;
 
     if (!create_stress_graph(&test_graph))
     {
-        printf("Could not create the test network.\n");
-        return;
+        return 0;
     }
 
     for (i = 0; i < test_graph.node_count; i++)
@@ -83,16 +82,10 @@ void run_stress_benchmark(void)
 
     edge_count /= 2;
 
-    printf("\nSynthetic network created successfully.\n");
-    printf("Locations: %d\n", test_graph.node_count);
-    printf("Road connections: %d\n", edge_count);
-    printf("Source location: 0\n");
-    printf("Algorithm repetitions: %d\n", REPETITIONS);
-
     /* Benchmark Dijkstra. */
     start = clock();
 
-    for (i = 0; i < REPETITIONS; i++)
+    for (i = 0; i < repetitions; i++)
     {
         result_d = dijkstra_all(
             &test_graph, 0,
@@ -102,8 +95,7 @@ void run_stress_benchmark(void)
 
         if (!result_d)
         {
-            printf("Dijkstra execution failed.\n");
-            return;
+            return 0;
         }
     }
 
@@ -111,12 +103,12 @@ void run_stress_benchmark(void)
 
     dijkstra_time =
         ((double)(end - start) / CLOCKS_PER_SEC)
-        * 1000.0 / REPETITIONS;
+        * 1000.0 / repetitions;
 
     /* Benchmark Bellman-Ford. */
     start = clock();
 
-    for (i = 0; i < REPETITIONS; i++)
+    for (i = 0; i < repetitions; i++)
     {
         result_b = bellman_ford(
             &test_graph, 0,
@@ -126,8 +118,7 @@ void run_stress_benchmark(void)
 
         if (result_b != 1)
         {
-            printf("Bellman-Ford execution failed.\n");
-            return;
+            return 0;
         }
     }
 
@@ -135,7 +126,7 @@ void run_stress_benchmark(void)
 
     bellman_time =
         ((double)(end - start) / CLOCKS_PER_SEC)
-        * 1000.0 / REPETITIONS;
+        * 1000.0 / repetitions;
 
     /* Compare shortest distances from both algorithms. */
     for (i = 0; i < test_graph.node_count; i++)
@@ -148,28 +139,55 @@ void run_stress_benchmark(void)
         }
     }
 
+    if (result != NULL)
+    {
+        result->node_count = test_graph.node_count;
+        result->edge_count = edge_count;
+        result->repetitions = repetitions;
+        result->dijkstra_time_ms = dijkstra_time;
+        result->bellman_time_ms = bellman_time;
+        result->distances_match = distances_match;
+        result->graph_memory = (unsigned long)sizeof(Graph);
+        result->distance_array_memory = (unsigned long)(sizeof(double) * MAX_NODES + sizeof(int) * MAX_NODES);
+        result->dijkstra_visited_memory = (unsigned long)(sizeof(int) * MAX_NODES);
+    }
+
+    return 1;
+}
+
+void run_stress_benchmark(void)
+{
+    StressBenchmarkResult res;
+
+    printf("\n====================================\n");
+    printf("       LARGE DATA STRESS TEST\n");
+    printf("====================================\n");
+
+    if (!execute_stress_benchmark(REPETITIONS, &res))
+    {
+        printf("Could not complete the stress benchmark.\n");
+        return;
+    }
+
+    printf("\nSynthetic network created successfully.\n");
+    printf("Locations: %d\n", res.node_count);
+    printf("Road connections: %d\n", res.edge_count);
+    printf("Source location: 0\n");
+    printf("Algorithm repetitions: %d\n", res.repetitions);
+
     printf("\n--- EXECUTION TIME COMPARISON ---\n");
-    printf("Dijkstra average time: %.6f ms\n", dijkstra_time);
-    printf("Bellman-Ford average time: %.6f ms\n", bellman_time);
+    printf("Dijkstra average time: %.6f ms\n", res.dijkstra_time_ms);
+    printf("Bellman-Ford average time: %.6f ms\n", res.bellman_time_ms);
 
     printf("\n--- MEMORY ESTIMATION ---\n");
-    printf("Graph structure memory: %lu bytes\n",
-           (unsigned long)sizeof(Graph));
-
-    printf("Common distance and previous arrays: %lu bytes\n",
-           (unsigned long)(
-               sizeof(double) * MAX_NODES +
-               sizeof(int) * MAX_NODES
-           ));
-
-    printf("Dijkstra visited array: %lu bytes\n",
-           (unsigned long)(sizeof(int) * MAX_NODES));
-
+    printf("Graph structure memory: %lu bytes\n", res.graph_memory);
+    printf("Common distance and previous arrays: %lu bytes\n", res.distance_array_memory);
+    printf("Dijkstra visited array: %lu bytes\n", res.dijkstra_visited_memory);
     printf("Bellman-Ford additional per-node array: 0 bytes\n");
 
     printf("\n--- CORRECTNESS VERIFICATION ---\n");
 
-    if (distances_match)
+    if (res.distances_match)
         printf("PASS: Both algorithms produced matching distances.\n");
     else
         printf("FAIL: Distance results do not match.\n");

@@ -8,4 +8,8 @@ int dijkstra(const Graph *graph, int source, int destination,
              double distances[MAX_NODES],
              int previous[MAX_NODES]);
 
+int dijkstra_all(const Graph *graph, int source,
+                 double distances[MAX_NODES],
+                 int previous[MAX_NODES]);
+
 #endif

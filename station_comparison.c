@@ -100,7 +100,7 @@ static void display_strategy_result(
 }
 
 /* Run one greedy strategy without modifying the original graph */
-static int run_greedy_strategy(
+int run_greedy_strategy(
     const Graph *graph,
     const double demand[MAX_NODES],
     int selected[MAX_NODES],

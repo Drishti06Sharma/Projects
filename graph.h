@@ -30,6 +30,7 @@ typedef struct
 } Graph;
 
 void initialize_graph(Graph *graph);
+void load_dehradun_network(Graph *graph);
 
 int add_location(Graph *graph, const char *name);
 

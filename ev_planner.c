@@ -19,9 +19,11 @@ void show_menu(void)
     printf("6. Find Shortest Distance Route (Bellman-Ford)\n");
     printf("7. Install Charging Station\n");
     printf("8. Display Charging Stations\n");
-    printf("9. Exit\n");
-    printf("10. Automatic Charging Station Placement (Greedy)\n");
-    printf("11. Quick Sort and Binary Search\n");
+    printf("9. Automatic Charging Station Placement (Greedy)\n");
+    printf("10. Quick Sort and Binary Search\n");
+    printf("11. Compare Charging Station Strategies\n");
+    printf("12. Large Data Stress Test\n");
+    printf("13. Exit\n");
 }
  
 

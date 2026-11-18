@@ -3,10 +3,67 @@
 #include <string.h>
 #include "graph.h"
 
+void load_dehradun_network(Graph *graph)
+{
+    if (graph == NULL)
+        return;
+
+    graph->node_count = 0;
+
+    /* Predefined Dehradun locations */
+    add_location(graph, "Clock Tower");
+    add_location(graph, "ISBT Dehradun");
+    add_location(graph, "Railway Station");
+    add_location(graph, "Forest Research Institute");
+    add_location(graph, "Pacific Mall");
+    add_location(graph, "Prem Nagar");
+    add_location(graph, "DIT University");
+    add_location(graph, "Max Hospital");
+    add_location(graph, "Survey Chowk");
+    add_location(graph, "Sahastradhara Road");
+
+    /* Clock Tower connections */
+    add_road(graph, 0, 1, 5.5, 0.20);
+    add_road(graph, 0, 2, 2.0, 0.10);
+    add_road(graph, 0, 3, 4.5, 0.18);
+    add_road(graph, 0, 4, 6.5, 0.22);
+    add_road(graph, 0, 8, 1.8, 0.10);
+
+    /* ISBT connections */
+    add_road(graph, 1, 2, 4.0, 0.15);
+    add_road(graph, 1, 5, 8.5, 0.30);
+
+    /* Railway Station connections */
+    add_road(graph, 2, 8, 2.5, 0.12);
+
+    /* FRI connections */
+    add_road(graph, 3, 5, 6.0, 0.22);
+
+    /* Pacific Mall connections */
+    add_road(graph, 4, 7, 4.0, 0.15);
+    add_road(graph, 4, 9, 6.5, 0.25);
+    add_road(graph, 4, 6, 12.0, 0.35);
+
+    /* Prem Nagar connections */
+    add_road(graph, 5, 6, 18.0, 0.45);
+
+    /* DIT University connections */
+    add_road(graph, 6, 9, 14.0, 0.40);
+
+    /* Max Hospital connections */
+    add_road(graph, 7, 8, 4.0, 0.16);
+
+    /* Sahastradhara Road connection */
+    add_road(graph, 9, 8, 8.0, 0.25);
+}
+
 void initialize_graph(Graph *graph)
 {
     if (graph != NULL)
+    {
         graph->node_count = 0;
+        load_dehradun_network(graph);
+    }
 }
 
 int add_location(Graph *graph, const char *name)
