@@ -7,24 +7,21 @@
 #include "fastest_route.h"
 #include "bellman_ford.h"
 #include "advanced_algorithms.h"
-#include "station_comparison.h"
 
 void show_menu(void)
 {
-printf("\n===== EV Trip Planner =====\n");
-printf("1. Add Location\n");
-printf("2. Add Road\n");
-printf("3. Display Locations\n");
-printf("4. Find Shortest Distance Route (Dijkstra)\n");
-printf("5. Find Fastest Route (Dijkstra)\n");
-printf("6. Find Shortest Distance Route (Bellman-Ford)\n");
-printf("7. Install Charging Station\n");
-printf("8. Display Charging Stations\n");
-printf("9. Automatic Charging Station Placement (Greedy)\n");
-printf("10. Quick Sort and Binary Search\n");
-printf("11. Compare Charging Station Strategies\n");
-printf("12. Large Data Stress Test\n");
-printf("13. Exit\n");
+    printf("\n===== EV Trip Planner =====\n");
+    printf("1. Add Location\n");
+    printf("2. Add Road\n");
+    printf("3. Display Locations\n");
+    printf("4. Find Shortest Distance Route (Dijkstra)\n");
+    printf("5. Find Fastest Route (Dijkstra)\n");
+    printf("6. Find Shortest Distance Route (Bellman-Ford)\n");
+    printf("7. Install Charging Station\n");
+    printf("8. Display Charging Stations\n");
+    printf("9. Exit\n");
+    printf("10. Automatic Charging Station Placement (Greedy)\n");
+    printf("11. Quick Sort and Binary Search\n");
 }
  
 
