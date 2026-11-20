@@ -1,9 +1,31 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
 #include <ctype.h>
 #include "station_comparison.h"
+
+/* Simulation configuration */
+#define DEFAULT_STATION_COST 400.0
+#define DEFAULT_CHARGERS_PER_STATION 4
+#define DEFAULT_MAX_CHARGERS 20
+#define DEFAULT_CUSTOM_DEMAND 60.0
+
+#define PREDEFINED_LOCATION_COUNT 10
+
+/* Synthetic demand scores for predefined locations */
+static const double predefined_demand[] =
+{
+    90.0,  /* Clock Tower */
+    70.0,  /* ISBT Dehradun */
+    65.0,  /* Railway Station */
+    55.0,  /* Forest Research Institute */
+    95.0,  /* Pacific Mall */
+    75.0,  /* Prem Nagar */
+    80.0,  /* DIT University */
+    85.0,  /* Max Hospital */
+    88.0,  /* Survey Chowk */
+    92.0   /* Sahastradhara Road */
+};
 
 /* Read a valid positive number */
 static int read_positive_double(const char *message, double *value)
@@ -30,31 +52,6 @@ static int read_positive_double(const char *message, double *value)
     return 1;
 }
 
-/* Read a valid positive integer */
-static int read_positive_integer(const char *message, int *value)
-{
-    char input[100];
-    char *end;
-    long number;
-
-    printf("%s", message);
-
-    if (fgets(input, sizeof(input), stdin) == NULL)
-        return 0;
-
-    number = strtol(input, &end, 10);
-
-    while (isspace((unsigned char)*end))
-        end++;
-
-    if (end == input || *end != '\0' ||
-        number <= 0 || number > 1000000)
-        return 0;
-
-    *value = (int)number;
-    return 1;
-}
-
 /* Display results of one placement strategy */
 static void display_strategy_result(
     const Graph *graph,
@@ -66,10 +63,13 @@ static void display_strategy_result(
     const char *strategy_name)
 {
     int i;
+
     int total_chargers =
         station_count * chargers_per_station;
 
-    double total_cost = station_count * station_cost;
+    double total_cost =
+        station_count * station_cost;
+
     double captured_score = 0.0;
 
     printf("\n--- %s ---\n", strategy_name);
@@ -83,10 +83,14 @@ static void display_strategy_result(
     {
         if (selected[i])
         {
-            printf("Station: %s\n", graph->nodes[i].name);
+            printf("Station: %s\n",
+                   graph->nodes[i].name);
+
             printf("Road connections: %d\n",
                    graph->nodes[i].edge_count);
-            printf("Simulated demand score: %.2f\n", demand[i]);
+
+            printf("Simulated demand score: %.2f\n",
+                   demand[i]);
 
             captured_score += demand[i];
         }
@@ -131,7 +135,9 @@ int run_greedy_strategy(
                 /* Strategy A: highest road connectivity */
                 if (graph->nodes[i].edge_count >
                     graph->nodes[best].edge_count)
+                {
                     best = i;
+                }
             }
             else
             {
@@ -140,7 +146,9 @@ int run_greedy_strategy(
                     (demand[i] == demand[best] &&
                      graph->nodes[i].edge_count >
                      graph->nodes[best].edge_count))
+                {
                     best = i;
+                }
             }
         }
 
@@ -158,15 +166,23 @@ int run_greedy_strategy(
 void compare_station_strategies(const Graph *graph)
 {
     double demand[MAX_NODES] = {0};
+
     int selected_a[MAX_NODES] = {0};
     int selected_b[MAX_NODES] = {0};
 
     double budget;
-    double station_cost;
 
-    int chargers_per_station;
-    int maximum_chargers;
+    const double station_cost =
+        DEFAULT_STATION_COST;
+
+    const int chargers_per_station =
+        DEFAULT_CHARGERS_PER_STATION;
+
+    const int maximum_chargers =
+        DEFAULT_MAX_CHARGERS;
+
     int max_stations;
+    int available_locations = 0;
 
     int count_a;
     int count_b;
@@ -182,87 +198,100 @@ void compare_station_strategies(const Graph *graph)
     printf(" CHARGING STATION STRATEGY COMPARISON\n");
     printf("====================================\n");
 
-    printf("\nEnter simulated demand priority scores.\n");
-    printf("Use values greater than zero for each location.\n");
+    printf("\n===== SIMULATION CONFIGURATION =====\n");
+    printf("Station installation cost: %.2f\n", station_cost);
+    printf("Chargers per station: %d\n", chargers_per_station);
+    printf("Maximum available chargers: %d\n", maximum_chargers);
 
+    printf("\n===== LOCATION PRIORITY SCORES =====\n");
+
+    /* Assign predefined synthetic demand scores */
     for (i = 0; i < graph->node_count; i++)
     {
-        char message[120];
-
-        snprintf(message, sizeof(message),
-                 "Demand score for %s: ",
-                 graph->nodes[i].name);
-
-        if (!read_positive_double(message, &demand[i]))
+        if (i < PREDEFINED_LOCATION_COUNT)
         {
-            printf("Invalid demand score. Operation cancelled.\n");
-            return;
+            demand[i] = predefined_demand[i];
         }
+        else
+        {
+            /* Default score for custom locations */
+            demand[i] = DEFAULT_CUSTOM_DEMAND;
+        }
+
+        printf("%-25s | Connectivity: %d | Demand score: %.2f\n",
+               graph->nodes[i].name,
+               graph->nodes[i].edge_count,
+               demand[i]);
+
+        if (!graph->nodes[i].has_station)
+            available_locations++;
     }
 
+    if (available_locations == 0)
+    {
+        printf("\nAll locations already have charging stations.\n");
+        return;
+    }
+
+    /* Only user input required */
     if (!read_positive_double(
-            "Enter total installation budget: ", &budget))
+            "\nEnter total installation budget: ", &budget))
     {
         printf("Invalid budget.\n");
         return;
     }
 
-    if (!read_positive_double(
-            "Enter cost per station: ", &station_cost))
-    {
-        printf("Invalid station cost.\n");
-        return;
-    }
-
-    if (!read_positive_integer(
-            "Enter chargers per station: ", &chargers_per_station))
-    {
-        printf("Invalid charger count.\n");
-        return;
-    }
-
-    if (!read_positive_integer(
-            "Enter maximum available chargers: ", &maximum_chargers))
-    {
-        printf("Invalid maximum charger capacity.\n");
-        return;
-    }
-
-    /* Apply both budget and capacity constraints */
+    /* Calculate station limit using budget and charger capacity */
     max_stations = (int)(budget / station_cost);
 
-    if (max_stations > maximum_chargers / chargers_per_station)
-        max_stations = maximum_chargers / chargers_per_station;
+    int capacity_limit =
+        maximum_chargers / chargers_per_station;
 
-    if (max_stations > graph->node_count)
-        max_stations = graph->node_count;
+    if (max_stations > capacity_limit)
+        max_stations = capacity_limit;
 
-    if (max_stations < 0)
-        max_stations = 0;
+    if (max_stations > available_locations)
+        max_stations = available_locations;
 
-    printf("\nMaximum stations allowed: %d\n", max_stations);
+    printf("\n===== CONSTRAINTS =====\n");
+    printf("Budget: %.2f\n", budget);
+    printf("Cost per station: %.2f\n", station_cost);
+    printf("Maximum stations allowed: %d\n", max_stations);
 
+    /* Run both strategies */
     count_a = run_greedy_strategy(
         graph, demand, selected_a, 1, max_stations);
 
     count_b = run_greedy_strategy(
         graph, demand, selected_b, 2, max_stations);
 
+    /* Display results */
     display_strategy_result(
-        graph, selected_a, demand, count_a,
-        chargers_per_station, station_cost,
+        graph,
+        selected_a,
+        demand,
+        count_a,
+        chargers_per_station,
+        station_cost,
         "STRATEGY A: CONNECTIVITY-BASED GREEDY");
 
     display_strategy_result(
-        graph, selected_b, demand, count_b,
-        chargers_per_station, station_cost,
+        graph,
+        selected_b,
+        demand,
+        count_b,
+        chargers_per_station,
+        station_cost,
         "STRATEGY B: DEMAND-BASED GREEDY");
 
-    printf("\n--- COMPARISON SUMMARY ---\n");
+    /* Compare both strategies */
+    printf("\n===== COMPARISON SUMMARY =====\n");
+
     printf("Connectivity-based stations: %d\n", count_a);
     printf("Demand-based stations: %d\n", count_b);
 
     printf("\nNote: Demand scores are synthetic simulation values.\n");
+    printf("Installation costs are hypothetical.\n");
     printf("Existing installed stations are excluded.\n");
     printf("This comparison does not modify the original graph.\n");
 }

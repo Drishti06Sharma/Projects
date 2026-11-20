@@ -79,7 +79,7 @@ int main(void)
 
             case 13:
                 knapsack_station_selection(&graph);
-                 break;
+                break;
 
             case 14:
                 printf("Exiting EV Trip Planner. Goodbye!\n");

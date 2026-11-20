@@ -1,7 +1,10 @@
-
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
+
 #include "graph.h"
+
+/* ---------- LOAD DEHRADUN NETWORK ---------- */
 
 void load_dehradun_network(Graph *graph)
 {
@@ -57,28 +60,70 @@ void load_dehradun_network(Graph *graph)
     add_road(graph, 9, 8, 8.0, 0.25);
 }
 
+/* ---------- INITIALIZE GRAPH ---------- */
+
 void initialize_graph(Graph *graph)
 {
-    if (graph != NULL)
-    {
-        graph->node_count = 0;
-        load_dehradun_network(graph);
-    }
+    if (graph == NULL)
+        return;
+
+    graph->node_count = 0;
+
+    load_dehradun_network(graph);
 }
+
+/* ---------- ADD LOCATION ---------- */
 
 int add_location(Graph *graph, const char *name)
 {
     int i;
+    int length;
 
-    if (graph == NULL || name == NULL || name[0] == '\0')
+    if (graph == NULL || name == NULL)
         return -1;
 
-    if (graph->node_count >= MAX_NODES)
+    if (graph->node_count < 0 ||
+        graph->node_count >= MAX_NODES)
     {
         printf("Maximum locations reached!\n");
         return -1;
     }
 
+    /* Remove leading spaces */
+    while (isspace((unsigned char)*name))
+    {
+        name++;
+    }
+
+    if (*name == '\0')
+    {
+        printf("Invalid location name.\n");
+        return -1;
+    }
+
+    /* Check name length */
+    length = strlen(name);
+
+    if (length >= MAX_NAME)
+    {
+        printf("Location name is too long.\n");
+        return -1;
+    }
+
+    /* Remove trailing spaces */
+    while (length > 0 &&
+           isspace((unsigned char)name[length - 1]))
+    {
+        length--;
+    }
+
+    if (length == 0)
+    {
+        printf("Invalid location name.\n");
+        return -1;
+    }
+
+    /* Check duplicate location names */
     for (i = 0; i < graph->node_count; i++)
     {
         if (strcmp(graph->nodes[i].name, name) == 0)
@@ -90,12 +135,11 @@ int add_location(Graph *graph, const char *name)
 
     i = graph->node_count;
 
-    strncpy(graph->nodes[i].name, name, MAX_NAME - 1);
-    graph->nodes[i].name[MAX_NAME - 1] = '\0';
+    strncpy(graph->nodes[i].name, name, length);
+    graph->nodes[i].name[length] = '\0';
 
     graph->nodes[i].edge_count = 0;
 
-    /* Initially, no charging station exists here. */
     graph->nodes[i].has_station = 0;
     graph->nodes[i].charger_count = 0;
     graph->nodes[i].installation_cost = 0.0;
@@ -105,25 +149,61 @@ int add_location(Graph *graph, const char *name)
     return i;
 }
 
-int add_road(Graph *graph, int source, int destination,
-             double distance, double time)
+/* ---------- ADD ROAD ---------- */
+
+int add_road(Graph *graph,
+             int source,
+             int destination,
+             double distance,
+             double time)
 {
     int i;
 
     if (graph == NULL)
         return 0;
 
+    /* Validate location IDs */
     if (source < 0 || source >= graph->node_count ||
         destination < 0 || destination >= graph->node_count)
+    {
+        printf("Invalid location ID.\n");
         return 0;
+    }
 
-    if (source == destination || distance <= 0 || time <= 0)
+    /* Prevent self-loops */
+    if (source == destination)
+    {
+        printf("A location cannot connect to itself.\n");
         return 0;
+    }
 
+    /* Validate road values */
+    if (distance <= 0 || time <= 0)
+    {
+        printf("Distance and time must be positive.\n");
+        return 0;
+    }
+
+    /* Check edge capacity */
     if (graph->nodes[source].edge_count >= MAX_NODES ||
         graph->nodes[destination].edge_count >= MAX_NODES)
+    {
+        printf("Maximum road connections reached.\n");
         return 0;
+    }
 
+    /* Check for duplicate road */
+    for (i = 0; i < graph->nodes[source].edge_count; i++)
+    {
+        if (graph->nodes[source].edges[i].destination ==
+            destination)
+        {
+            printf("Road already exists between these locations.\n");
+            return 0;
+        }
+    }
+
+    /* Add road from source to destination */
     i = graph->nodes[source].edge_count;
 
     graph->nodes[source].edges[i].destination = destination;
@@ -132,6 +212,7 @@ int add_road(Graph *graph, int source, int destination,
 
     graph->nodes[source].edge_count++;
 
+    /* Add reverse road for undirected graph */
     i = graph->nodes[destination].edge_count;
 
     graph->nodes[destination].edges[i].destination = source;
@@ -143,30 +224,53 @@ int add_road(Graph *graph, int source, int destination,
     return 1;
 }
 
-int install_charging_station(Graph *graph, int location_id,
-                             int charger_count, double installation_cost)
+/* ---------- INSTALL CHARGING STATION ---------- */
+
+int install_charging_station(Graph *graph,
+                             int location_id,
+                             int charger_count,
+                             double installation_cost)
 {
     if (graph == NULL)
         return 0;
 
-    if (location_id < 0 || location_id >= graph->node_count)
+    /* Validate location */
+    if (location_id < 0 ||
+        location_id >= graph->node_count)
+    {
+        printf("Invalid location ID.\n");
         return 0;
+    }
 
-    if (charger_count <= 0 || installation_cost <= 0)
+    /* Validate charger count and cost */
+    if (charger_count <= 0 ||
+        installation_cost <= 0)
+    {
+        printf("Charger count and installation cost "
+               "must be positive.\n");
         return 0;
+    }
 
+    /* Prevent duplicate station installation */
     if (graph->nodes[location_id].has_station)
     {
-        printf("A charging station already exists at this location.\n");
+        printf("A charging station already exists "
+               "at this location.\n");
         return 0;
     }
 
     graph->nodes[location_id].has_station = 1;
-    graph->nodes[location_id].charger_count = charger_count;
-    graph->nodes[location_id].installation_cost = installation_cost;
+
+    graph->nodes[location_id].charger_count =
+        charger_count;
+
+    graph->nodes[location_id].installation_cost =
+        installation_cost;
 
     return 1;
 }
+
+/* ---------- DISPLAY LOCATIONS ---------- */
 
 void display_locations(const Graph *graph)
 {
@@ -182,16 +286,23 @@ void display_locations(const Graph *graph)
 
     for (i = 0; i < graph->node_count; i++)
     {
-        printf("\nLocation %d: %s", i, graph->nodes[i].name);
+        printf("\nLocation %d: %s",
+               i,
+               graph->nodes[i].name);
 
         if (graph->nodes[i].has_station)
+        {
             printf(" [Charging Station]");
+        }
 
         printf("\n");
 
-        for (j = 0; j < graph->nodes[i].edge_count; j++)
+        for (j = 0;
+             j < graph->nodes[i].edge_count;
+             j++)
         {
-            int next = graph->nodes[i].edges[j].destination;
+            int next =
+                graph->nodes[i].edges[j].destination;
 
             printf("  -> %s (%.2f km, %.2f hours)\n",
                    graph->nodes[next].name,
@@ -200,6 +311,8 @@ void display_locations(const Graph *graph)
         }
     }
 }
+
+/* ---------- DISPLAY CHARGING STATIONS ---------- */
 
 void display_charging_stations(const Graph *graph)
 {
@@ -219,11 +332,16 @@ void display_charging_stations(const Graph *graph)
         if (graph->nodes[i].has_station)
         {
             printf("Location ID: %d\n", i);
-            printf("Location: %s\n", graph->nodes[i].name);
+
+            printf("Location: %s\n",
+                   graph->nodes[i].name);
+
             printf("Number of chargers: %d\n",
                    graph->nodes[i].charger_count);
+
             printf("Installation cost: %.2f\n",
                    graph->nodes[i].installation_cost);
+
             printf("-------------------------\n");
 
             found = 1;
@@ -231,5 +349,7 @@ void display_charging_stations(const Graph *graph)
     }
 
     if (!found)
+    {
         printf("No charging stations installed yet.\n");
+    }
 }

@@ -4,6 +4,24 @@
 #include "input_validation.h"
 
 #define MAX_BUDGET 100000
+#define DEFAULT_CUSTOM_COST 400
+
+/* Hypothetical installation costs for predefined locations */
+static const int predefined_costs[] =
+{
+    500,  /* Clock Tower */
+    300,  /* ISBT Dehradun */
+    400,  /* Railway Station */
+    200,  /* Forest Research Institute */
+    600,  /* Pacific Mall */
+    300,  /* Prem Nagar */
+    400,  /* DIT University */
+    200,  /* Max Hospital */
+    300,  /* Survey Chowk */
+    400   /* Sahastradhara Road */
+};
+
+#define PREDEFINED_LOCATION_COUNT 10
 
 void knapsack_station_selection(Graph *graph)
 {
@@ -13,6 +31,7 @@ void knapsack_station_selection(Graph *graph)
 
     int costs[MAX_NODES];
     int benefits[MAX_NODES];
+    int location_ids[MAX_NODES];
     int selected[MAX_NODES] = {0};
 
     if (graph == NULL || graph->node_count == 0)
@@ -31,43 +50,35 @@ void knapsack_station_selection(Graph *graph)
         return;
     }
 
-    printf("\nAvailable Locations:\n");
-
-    for (i = 0; i < graph->node_count; i++)
-    {
-        if (!graph->nodes[i].has_station)
-        {
-            printf("%d. %-25s | Road connections: %d\n",
-                   i,
-                   graph->nodes[i].name,
-                   graph->nodes[i].edge_count);
-        }
-    }
-
-    printf("\nEnter installation cost for each available location.\n");
+    printf("\n===== AVAILABLE LOCATIONS =====\n");
 
     for (i = 0; i < graph->node_count; i++)
     {
         if (graph->nodes[i].has_station)
             continue;
 
-        int cost;
+        /* Store location ID */
+        location_ids[candidate_count] = i;
 
-        printf("\nLocation: %s\n",
-               graph->nodes[i].name);
-
-        if (!read_integer("Installation cost: ", &cost) ||
-            cost <= 0)
+        /* Assign predefined or default cost */
+        if (i < PREDEFINED_LOCATION_COUNT)
         {
-            printf("Invalid cost. Knapsack cancelled.\n");
-            return;
+            costs[candidate_count] = predefined_costs[i];
+        }
+        else
+        {
+            costs[candidate_count] = DEFAULT_CUSTOM_COST;
         }
 
-        costs[candidate_count] = cost;
-
-        /* Benefit is based on road connectivity */
+        /* Connectivity is used as benefit */
         benefits[candidate_count] =
             graph->nodes[i].edge_count;
+
+        printf("%d. %-25s | Connections: %d | Cost: %d\n",
+               i,
+               graph->nodes[i].name,
+               benefits[candidate_count],
+               costs[candidate_count]);
 
         candidate_count++;
     }
@@ -78,13 +89,13 @@ void knapsack_station_selection(Graph *graph)
         return;
     }
 
-    /* Allocate DP table */
+    /* Allocate Dynamic Programming table */
     int cols = budget + 1;
 
-    int *dp = calloc(
-        (size_t)(candidate_count + 1) * cols,
-        sizeof(int)
-    );
+    size_t total_cells =
+        (size_t)(candidate_count + 1) * (size_t)cols;
+
+    int *dp = calloc(total_cells, sizeof(int));
 
     if (dp == NULL)
     {
@@ -92,7 +103,7 @@ void knapsack_station_selection(Graph *graph)
         return;
     }
 
-    /* Dynamic Programming */
+    /* 0/1 Knapsack Dynamic Programming */
     for (i = 1; i <= candidate_count; i++)
     {
         for (w = 0; w <= budget; w++)
@@ -118,7 +129,7 @@ void knapsack_station_selection(Graph *graph)
     printf("\nMaximum Connectivity Benefit: %d\n",
            dp[candidate_count * cols + budget]);
 
-    /* Backtracking */
+    /* Backtracking to identify selected locations */
     w = budget;
 
     for (i = candidate_count; i > 0; i--)
@@ -141,36 +152,16 @@ void knapsack_station_selection(Graph *graph)
     {
         if (selected[i])
         {
-            /* Find corresponding graph location */
-            int candidate_index = 0;
-            int location_id = -1;
-            int j;
+            int location_id = location_ids[i];
 
-            for (j = 0; j < graph->node_count; j++)
-            {
-                if (graph->nodes[j].has_station)
-                    continue;
+            printf("%-25s | Cost: %d | Benefit: %d\n",
+                   graph->nodes[location_id].name,
+                   costs[i],
+                   benefits[i]);
 
-                if (candidate_index == i)
-                {
-                    location_id = j;
-                    break;
-                }
-
-                candidate_index++;
-            }
-
-            if (location_id != -1)
-            {
-                printf("%s | Cost: %d | Benefit: %d\n",
-                       graph->nodes[location_id].name,
-                       costs[i],
-                       benefits[i]);
-
-                total_cost += costs[i];
-                total_benefit += benefits[i];
-                stations_selected++;
-            }
+            total_cost += costs[i];
+            total_benefit += benefits[i];
+            stations_selected++;
         }
     }
 

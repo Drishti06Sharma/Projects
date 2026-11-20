@@ -1,5 +1,6 @@
-
 #include <stdio.h>
+#include "advanced_algorithms.h"
+#include "input_validation.h"
 
 /* ---------- QUICK SORT ---------- */
 
@@ -48,7 +49,8 @@ int binary_search_iterative(int arr[], int n, int key)
         {
             return mid;
         }
-        else if (arr[mid] < key)
+
+        if (arr[mid] < key)
         {
             low = mid + 1;
         }
@@ -76,14 +78,15 @@ int binary_search_recursive(int arr[], int low, int high, int key)
     {
         return mid;
     }
-    else if (arr[mid] < key)
+
+    if (arr[mid] < key)
     {
-        return binary_search_recursive(arr, mid + 1, high, key);
+        return binary_search_recursive(
+            arr, mid + 1, high, key);
     }
-    else
-    {
-        return binary_search_recursive(arr, low, mid - 1, key);
-    }
+
+    return binary_search_recursive(
+        arr, low, mid - 1, key);
 }
 
 /* ---------- MERGE FUNCTION ---------- */
@@ -177,6 +180,7 @@ void advanced_algorithms_menu(void)
 
     int n = sizeof(arr) / sizeof(arr[0]);
     int key;
+    int result;
 
     printf("\n====================================\n");
     printf("       ADVANCED ALGORITHMS\n");
@@ -194,7 +198,7 @@ void advanced_algorithms_menu(void)
 
     /* Merge Sort */
 
-    printf("\nArray before Merge Sort:\n");
+    printf("\nOriginal Array for Merge Sort:\n");
     display_array(merge_arr, n);
 
     merge_sort(merge_arr, 0, n - 1);
@@ -204,40 +208,43 @@ void advanced_algorithms_menu(void)
 
     /* Binary Search */
 
-    printf("\nEnter the number to search: ");
+    printf("\n===== BINARY SEARCH =====\n");
 
-    if (scanf("%d", &key) != 1)
+    printf("Sorted array: ");
+    display_array(arr, n);
+
+    if (!read_integer("Enter the number to search: ", &key))
     {
         printf("Invalid input. Please enter an integer.\n");
-
-        int ch;
-        while ((ch = getchar()) != '\n' && ch != EOF)
-        {
-        }
-
         return;
     }
 
-    int result = binary_search_iterative(arr, n, key);
+    /* Iterative Binary Search */
+
+    result = binary_search_iterative(arr, n, key);
 
     if (result != -1)
     {
-        printf("\nIterative Binary Search: Found at index %d\n", result);
+        printf("Iterative Binary Search: "
+               "Element found at index %d\n", result);
     }
     else
     {
-        printf("\nIterative Binary Search: Not found\n");
+        printf("Iterative Binary Search: Element not found\n");
     }
+
+    /* Recursive Binary Search */
 
     result = binary_search_recursive(arr, 0, n - 1, key);
 
     if (result != -1)
     {
-        printf("Recursive Binary Search: Found at index %d\n", result);
+        printf("Recursive Binary Search: "
+               "Element found at index %d\n", result);
     }
     else
     {
-        printf("Recursive Binary Search: Not found\n");
+        printf("Recursive Binary Search: Element not found\n");
     }
 
     printf("\n====================================\n");

@@ -1,21 +1,41 @@
-
 #include <float.h>
 #include <stddef.h>
+#include <math.h>
+
 #include "bellman_ford.h"
 
-int bellman_ford(const Graph *graph, int source,
+/* ---------- BELLMAN-FORD ALGORITHM ---------- */
+
+int bellman_ford(const Graph *graph,
+                 int source,
                  double distances[MAX_NODES],
                  int previous[MAX_NODES])
 {
     int i, j, k;
 
-    if (graph == NULL || source < 0 ||
+    /* Validate pointers */
+    if (graph == NULL ||
+        distances == NULL ||
+        previous == NULL)
+    {
+        return 0;
+    }
+
+    /* Validate graph size */
+    if (graph->node_count <= 0 ||
+        graph->node_count > MAX_NODES)
+    {
+        return 0;
+    }
+
+    /* Validate source */
+    if (source < 0 ||
         source >= graph->node_count)
     {
         return 0;
     }
 
-    /* Initialize distances and previous locations. */
+    /* Initialize distances and previous locations */
     for (i = 0; i < graph->node_count; i++)
     {
         distances[i] = DBL_MAX;
@@ -24,48 +44,82 @@ int bellman_ford(const Graph *graph, int source,
 
     distances[source] = 0.0;
 
-    /* Relax all roads V - 1 times. */
+    /* Relax all edges V - 1 times */
     for (k = 0; k < graph->node_count - 1; k++)
     {
         int updated = 0;
 
         for (i = 0; i < graph->node_count; i++)
         {
+            /* Skip unreachable nodes */
             if (distances[i] == DBL_MAX)
                 continue;
 
-            for (j = 0; j < graph->nodes[i].edge_count; j++)
+            /* Validate edge count */
+            if (graph->nodes[i].edge_count < 0 ||
+                graph->nodes[i].edge_count > MAX_NODES)
             {
-                int next = graph->nodes[i].edges[j].destination;
-                double distance = graph->nodes[i].edges[j].distance;
+                return 0;
+            }
 
-                if (distances[i] + distance < distances[next])
+            for (j = 0;
+                 j < graph->nodes[i].edge_count;
+                 j++)
+            {
+                int next =
+                    graph->nodes[i].edges[j].destination;
+
+                double distance =
+                    graph->nodes[i].edges[j].distance;
+
+                /* Validate edge */
+                if (next < 0 ||
+                    next >= graph->node_count ||
+                    !isfinite(distance))
                 {
-                    distances[next] = distances[i] + distance;
+                    return 0;
+                }
+
+                /* Relax edge */
+                if (distances[i] + distance <
+                    distances[next])
+                {
+                    distances[next] =
+                        distances[i] + distance;
+
                     previous[next] = i;
+
                     updated = 1;
                 }
             }
         }
 
-        /* Stop early if no distance changed. */
+        /* Early stopping */
         if (!updated)
             break;
     }
 
-    /* Check for a negative-weight cycle. */
+    /* Check for negative-weight cycle */
     for (i = 0; i < graph->node_count; i++)
     {
         if (distances[i] == DBL_MAX)
             continue;
 
-        for (j = 0; j < graph->nodes[i].edge_count; j++)
+        for (j = 0;
+             j < graph->nodes[i].edge_count;
+             j++)
         {
-            int next = graph->nodes[i].edges[j].destination;
-            double distance = graph->nodes[i].edges[j].distance;
+            int next =
+                graph->nodes[i].edges[j].destination;
 
-            if (distances[i] + distance < distances[next])
+            double distance =
+                graph->nodes[i].edges[j].distance;
+
+            if (distances[i] + distance <
+                distances[next])
+            {
                 return -1;
+            }
         }
     }
 
