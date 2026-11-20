@@ -16,6 +16,8 @@ typedef struct
 static int parent[MAX_NODES];
 static int rank_array[MAX_NODES];
 
+static MSTEdge temp_edges[MAX_EDGES];
+
 /* ---------- UNION FIND ---------- */
 
 static void initialize_sets(int n)
@@ -60,25 +62,63 @@ static void union_sets(int a, int b)
     }
 }
 
-/* ---------- SORT EDGES ---------- */
+/* ---------- MERGE SORT ---------- */
+
+static void merge(MSTEdge edges[], int left, int middle, int right)
+{
+    int i = left;
+    int j = middle + 1;
+    int k = left;
+
+    /* Merge two sorted halves */
+    while (i <= middle && j <= right)
+    {
+        if (edges[i].weight <= edges[j].weight)
+        {
+            temp_edges[k++] = edges[i++];
+        }
+        else
+        {
+            temp_edges[k++] = edges[j++];
+        }
+    }
+
+    /* Copy remaining elements from left half */
+    while (i <= middle)
+    {
+        temp_edges[k++] = edges[i++];
+    }
+
+    /* Copy remaining elements from right half */
+    while (j <= right)
+    {
+        temp_edges[k++] = edges[j++];
+    }
+
+    /* Copy merged elements back */
+    for (i = left; i <= right; i++)
+    {
+        edges[i] = temp_edges[i];
+    }
+}
+
+static void merge_sort(MSTEdge edges[], int left, int right)
+{
+    if (left >= right)
+        return;
+
+    int middle = left + (right - left) / 2;
+
+    merge_sort(edges, left, middle);
+    merge_sort(edges, middle + 1, right);
+
+    merge(edges, left, middle, right);
+}
 
 static void sort_edges(MSTEdge edges[], int count)
 {
-    int i, j;
-    MSTEdge temp;
-
-    for (i = 0; i < count - 1; i++)
-    {
-        for (j = 0; j < count - i - 1; j++)
-        {
-            if (edges[j].weight > edges[j + 1].weight)
-            {
-                temp = edges[j];
-                edges[j] = edges[j + 1];
-                edges[j + 1] = temp;
-            }
-        }
-    }
+    if (count > 1)
+        merge_sort(edges, 0, count - 1);
 }
 
 /* ---------- KRUSKAL ---------- */
@@ -133,13 +173,15 @@ void kruskal_mst(const Graph *graph)
 
     start = clock();
 
+    /* Sort edges using Merge Sort */
     sort_edges(edges, edge_count);
 
+    /* Initialize Disjoint Sets */
     initialize_sets(graph->node_count);
 
     components = graph->node_count;
 
-    /* Select minimum-weight edges without cycles */
+    /* Select minimum-weight edges without creating cycles */
     for (i = 0; i < edge_count; i++)
     {
         int u = edges[i].source;
