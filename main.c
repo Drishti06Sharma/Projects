@@ -6,6 +6,7 @@
 #include "advanced_algorithms.h"
 #include "station_comparison.h"
 #include "stress_benchmark.h"
+#include "knapsack.h"
 
 int main(void)
 {
@@ -77,11 +78,15 @@ int main(void)
                 break;
 
             case 13:
+                knapsack_station_selection(&graph);
+                 break;
+
+            case 14:
                 printf("Exiting EV Trip Planner. Goodbye!\n");
                 return 0;
 
             default:
-                printf("Invalid choice. Please enter 1 to 13.\n");
+                printf("Invalid choice. Please enter 1 to 14.\n");
         }
     }
 

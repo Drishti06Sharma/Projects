@@ -23,7 +23,8 @@ void show_menu(void)
     printf("10. Quick Sort and Binary Search\n");
     printf("11. Compare Charging Station Strategies\n");
     printf("12. Large Data Stress Test\n");
-    printf("13. Exit\n");
+    printf("13. 0/1 Knapsack Station Optimization (DP)\n");
+    printf("14. Exit\n");
 }
  
 
