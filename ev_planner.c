@@ -26,7 +26,8 @@ void show_menu(void)
     printf("11. Compare Charging Station Strategies\n");
     printf("12. Large Data Stress Test\n");
     printf("13. 0/1 Knapsack Station Optimization (DP)\n");
-    printf("14. Exit\n");
+    printf("14. MST Comparison (Prim vs Kruskal)\n");
+    printf("15. Exit\n");
 }
 
 

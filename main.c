@@ -7,6 +7,7 @@
 #include "station_comparison.h"
 #include "stress_benchmark.h"
 #include "knapsack.h"
+#include "prim.h"
 
 int main(void)
 {
@@ -82,11 +83,15 @@ int main(void)
                 break;
 
             case 14:
+                compare_mst(&graph);
+                break;
+
+            case 15:
                 printf("Exiting EV Trip Planner. Goodbye!\n");
                 return 0;
 
             default:
-                printf("Invalid choice. Please enter 1 to 14.\n");
+                printf("Invalid choice. Please enter 1 to 15.\n");
         }
     }
 

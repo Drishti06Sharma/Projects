@@ -4,6 +4,25 @@
 
 #include "graph.h"
 
+/* ---------- CASE-INSENSITIVE STRING COMPARISON ---------- */
+
+static int names_equal_ignore_case(const char *a, const char *b)
+{
+    while (*a && *b)
+    {
+        if (tolower((unsigned char)*a) !=
+            tolower((unsigned char)*b))
+        {
+            return 0;
+        }
+
+        a++;
+        b++;
+    }
+
+    return *a == '\0' && *b == '\0';
+}
+
 /* ---------- LOAD DEHRADUN NETWORK ---------- */
 
 void load_dehradun_network(Graph *graph)
@@ -78,6 +97,7 @@ int add_location(Graph *graph, const char *name)
 {
     int i;
     int length;
+    char cleaned_name[MAX_NAME];
 
     if (graph == NULL || name == NULL)
         return -1;
@@ -101,14 +121,7 @@ int add_location(Graph *graph, const char *name)
         return -1;
     }
 
-    /* Check name length */
     length = strlen(name);
-
-    if (length >= MAX_NAME)
-    {
-        printf("Location name is too long.\n");
-        return -1;
-    }
 
     /* Remove trailing spaces */
     while (length > 0 &&
@@ -123,20 +136,33 @@ int add_location(Graph *graph, const char *name)
         return -1;
     }
 
+    /* Check name length after trimming */
+    if (length >= MAX_NAME)
+    {
+        printf("Location name is too long.\n");
+        return -1;
+    }
+
+    /* Create properly trimmed name */
+    strncpy(cleaned_name, name, length);
+    cleaned_name[length] = '\0';
+
     /* Check duplicate location names */
     for (i = 0; i < graph->node_count; i++)
     {
-        if (strcmp(graph->nodes[i].name, name) == 0)
+        if (names_equal_ignore_case(
+                graph->nodes[i].name,
+                cleaned_name))
         {
             printf("Location already exists!\n");
             return -1;
         }
     }
 
+    /* Add new location */
     i = graph->node_count;
 
-    strncpy(graph->nodes[i].name, name, length);
-    graph->nodes[i].name[length] = '\0';
+    strcpy(graph->nodes[i].name, cleaned_name);
 
     graph->nodes[i].edge_count = 0;
 
