@@ -45,6 +45,7 @@ int bellman_ford(const Graph *graph,
     distances[source] = 0.0;
 
     /* Relax all edges V - 1 times */
+    //Shortest path without cycles maximum V−1 edges contain kar sakta hai.
     for (k = 0; k < graph->node_count - 1; k++)
     {
         int updated = 0;
