@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include "advanced_algorithms.h"
 #include "input_validation.h"
@@ -171,51 +172,66 @@ void display_array(int arr[], int n)
     printf("\n");
 }
 
-/* ---------- ADVANCED ALGORITHMS MENU ---------- */
+/* ---------- EV NETWORK CONNECTIVITY ANALYSIS ---------- */
 
-void advanced_algorithms_menu(void)
+void advanced_algorithms_menu(Graph *graph)
 {
-    int arr[] = {45, 12, 78, 23, 9, 56};
-    int merge_arr[] = {45, 12, 78, 23, 9, 56};
+    if (graph == NULL || graph->node_count == 0)
+    {
+        printf("No locations available.\n");
+        return;
+    }
 
-    int n = sizeof(arr) / sizeof(arr[0]);
+    int arr[MAX_NODES];
+    int merge_arr[MAX_NODES];
+
+    int n = graph->node_count;
     int key;
     int result;
 
     printf("\n====================================\n");
-    printf("       ADVANCED ALGORITHMS\n");
+    printf("   EV NETWORK CONNECTIVITY ANALYSIS\n");
     printf("====================================\n");
 
-    /* Quick Sort */
+    /* Extract actual graph connectivity */
 
-    printf("\nOriginal Array:\n");
-    display_array(arr, n);
+    printf("\n===== LOCATION CONNECTIVITY =====\n");
+
+    for (int i = 0; i < n; i++)
+    {
+        arr[i] = graph->nodes[i].edge_count;
+        merge_arr[i] = graph->nodes[i].edge_count;
+
+        printf("%-25s | Road Connections: %d\n",
+               graph->nodes[i].name,
+               graph->nodes[i].edge_count);
+    }
+
+    /* QUICK SORT */
 
     quick_sort(arr, 0, n - 1);
 
-    printf("\nArray after Quick Sort:\n");
+    printf("\n===== QUICK SORT =====\n");
+    printf("Sorted Connectivity (Ascending): ");
     display_array(arr, n);
 
-    /* Merge Sort */
-
-    printf("\nOriginal Array for Merge Sort:\n");
-    display_array(merge_arr, n);
+    /* MERGE SORT */
 
     merge_sort(merge_arr, 0, n - 1);
 
-    printf("\nArray after Merge Sort:\n");
+    printf("\n===== MERGE SORT =====\n");
+    printf("Sorted Connectivity (Ascending): ");
     display_array(merge_arr, n);
 
-    /* Binary Search */
+    /* BINARY SEARCH */
 
-    printf("\n===== BINARY SEARCH =====\n");
+    printf("\n===== CONNECTIVITY SEARCH =====\n");
 
-    printf("Sorted array: ");
-    display_array(arr, n);
-
-    if (!read_integer("Enter the number to search: ", &key))
+    if (!read_integer(
+            "Enter number of road connections to search: ",
+            &key))
     {
-        printf("Invalid input. Please enter an integer.\n");
+        printf("Invalid input.\n");
         return;
     }
 
@@ -225,12 +241,23 @@ void advanced_algorithms_menu(void)
 
     if (result != -1)
     {
-        printf("Iterative Binary Search: "
-               "Element found at index %d\n", result);
+        printf("\nIterative Binary Search: Value found.\n");
+
+        printf("Locations having %d road connections:\n", key);
+
+        for (int i = 0; i < n; i++)
+        {
+            if (graph->nodes[i].edge_count == key)
+            {
+                printf("- %s\n",
+                       graph->nodes[i].name);
+            }
+        }
     }
     else
     {
-        printf("Iterative Binary Search: Element not found\n");
+        printf("\nIterative Binary Search: Value not found.\n");
+        printf("No location has %d road connections.\n", key);
     }
 
     /* Recursive Binary Search */
@@ -239,12 +266,11 @@ void advanced_algorithms_menu(void)
 
     if (result != -1)
     {
-        printf("Recursive Binary Search: "
-               "Element found at index %d\n", result);
+        printf("\nRecursive Binary Search: Value found.\n");
     }
     else
     {
-        printf("Recursive Binary Search: Element not found\n");
+        printf("\nRecursive Binary Search: Value not found.\n");
     }
 
     printf("\n====================================\n");
